@@ -14,8 +14,10 @@ struct SocketState
 	int sendSubType;	// Sending sub-type
 	char buffer[128];
 	int len;
+	
 };
 
+enum HTTP_Actions { Get,Post,Put,Delete,Head,Options, Trace };
 const int HTTP_PORT = 8080;
 const int MAX_SOCKETS = 60;
 const int EMPTY = 0;
@@ -288,6 +290,12 @@ void receiveMessage(int index)
 
 		if (sockets[index].len > 0)
 		{
+			char* HttpAction;
+			HttpAction = strtok(sockets[index].buffer," ");
+			char* HttpUri;
+			HttpUri = strtok(NULL, " ");
+
+
 			if (strncmp(sockets[index].buffer, "TimeString", 10) == 0)
 			{
 				sockets[index].send  = SEND;
