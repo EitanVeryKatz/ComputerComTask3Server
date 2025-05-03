@@ -1,0 +1,7 @@
+1.update struct to include action and uri
+2.in recieve: include action into field
+3.in recieve: include url into field
+4.in recieve: include Identify query/body add into field
+5.write html in all suppurted langs
+6.in send: add switch case for action
+7.in send: for action add handling

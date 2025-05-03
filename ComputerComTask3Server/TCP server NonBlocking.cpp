@@ -9,6 +9,7 @@ using namespace std;
 struct SocketState
 {
 	SOCKET id;			// Socket handle
+	HTTP_Actions Action;
 	int	recv;			// Receiving?
 	int	send;			// Sending?
 	int sendSubType;	// Sending sub-type
