@@ -12,8 +12,7 @@ struct SocketState
 	HTTP_Actions Action;
 	int	recv;			// Receiving?
 	int	send;			// Sending?
-	int sendSubType;	// Sending sub-type
-	char buffer[128];
+	char buffer[255];
 	int len;
 	
 };
@@ -300,7 +299,7 @@ void receiveMessage(int index)
 			if (strncmp(sockets[index].buffer, "TimeString", 10) == 0)
 			{
 				sockets[index].send  = SEND;
-				sockets[index].sendSubType = SEND_TIME;
+				//sockets[index].Action = SEND_TIME;
 				memcpy(sockets[index].buffer, &sockets[index].buffer[10], sockets[index].len - 10);
 				sockets[index].len -= 10;
 				return;
@@ -308,7 +307,7 @@ void receiveMessage(int index)
 			else if (strncmp(sockets[index].buffer, "SecondsSince1970", 16) == 0)
 			{
 				sockets[index].send  = SEND;
-				sockets[index].sendSubType = SEND_SECONDS;
+				//sockets[index].Action = SEND_SECONDS;
 				memcpy(sockets[index].buffer, &sockets[index].buffer[16], sockets[index].len - 16);
 				sockets[index].len -= 16;
 				return;
@@ -330,7 +329,7 @@ void sendMessage(int index)
 	char sendBuff[255];
 
 	SOCKET msgSocket = sockets[index].id;
-	if (sockets[index].sendSubType == SEND_TIME)
+	if (sockets[index].Action == SEND_TIME)
 	{
 		// Answer client's request by the current time string.
 		
@@ -341,7 +340,7 @@ void sendMessage(int index)
 		strcpy(sendBuff, ctime(&timer));
 		sendBuff[strlen(sendBuff)-1] = 0; //to remove the new-line from the created string
 	}
-	else if(sockets[index].sendSubType == SEND_SECONDS)
+	else if(sockets[index].Action == SEND_SECONDS)
 	{
 		// Answer client's request by the current time in seconds.
 		
