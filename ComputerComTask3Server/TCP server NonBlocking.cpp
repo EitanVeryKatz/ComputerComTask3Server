@@ -6,7 +6,7 @@ using namespace std;
 #include <string.h>
 #include <time.h>
 
-struct SocketState
+struct HttpSocket
 {
 	SOCKET id;			// Socket handle
 	HTTP_Actions Action;
@@ -34,7 +34,7 @@ void acceptConnection(int index);
 void receiveMessage(int index);
 void sendMessage(int index);
 
-struct SocketState sockets[MAX_SOCKETS]={0};
+struct HttpSocket sockets[MAX_SOCKETS]={0};
 int socketsCount = 0;
 
 
