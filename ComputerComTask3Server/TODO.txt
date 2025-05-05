@@ -1,7 +1,13 @@
-1.update struct to include action and uri
-2.in recieve: include action into field
-3.in recieve: include url into field
-4.in recieve: include Identify query/body add into field
+
+2.in recieve: activate parsing and and status code
 5.write html in all suppurted langs
 6.in send: add switch case for action
 7.in send: for action add handling
+
+done:
+1.update struct to include action and uri
+2.add parsing function
+
+body: 
+
+now the parsing function Updates fields in class and returns 400 if request invalid or 0 else;

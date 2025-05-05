@@ -29,13 +29,13 @@ public:
 	int len;
 
 	int ParseHttpRequest(char* request) {
-		// שמירת עותק זמני כי strtok משנה את המחרוזת
+		
 		char temp[MAX_LINE_LENGTH];
 		strncpy(temp, request, MAX_LINE_LENGTH - 1);
 		temp[MAX_LINE_LENGTH - 1] = '\0';
 
-		// שורת הבקשה הראשונה
-		char* line = strtok(temp, "\r\n");
+		
+		char* line = strtok(temp, "\r\n");//get request line
 		if (!line) return BAD_REQUEST;
 
 		char* method = strtok(line, " ");
@@ -48,14 +48,14 @@ public:
 		if (!checkUrlVaild(url)) return BAD_REQUEST;
 
 		strncpy(verb, method, sizeof(verb));
-		strncpy(requestUrl, url, sizeof(requestUrl));
+		strncpy(requestUrl, url, sizeof(requestUrl));//fill all fields if valid request
 
 
 		while (true) {
 			char* header = strtok(NULL, "\r\n");
 			if (!header || strlen(header) == 0) break;
 			headers.push_back(_strdup(header));
-
+			//get all headers seperatly in vector
 
 			char* bodyStart = strstr(request, "\r\n\r\n");
 			if (bodyStart) {
