@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
+#include <sstream>
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
@@ -279,39 +280,23 @@ void receiveMessage(int index)
 		
 		sockets[index].len += bytesRecv;
 
-		if (sockets[index].len > 0)
+		//Parse HTTP request
+		HttpSocket* httpSock = reinterpret_cast<HttpSocket*>(&sockets[index]);
+
+		int parseResult = httpSock->ParseHttpRequest(sockets[index].buffer);
+		
+
+		if (parseResult == BAD_REQUEST) //Case: The HTTP Request was bad
 		{
-			char* HttpAction;
-			HttpAction = strtok(sockets[index].buffer," ");
-			char* HttpUri;
-			HttpUri = strtok(NULL, " ");
-
-
-			if (strncmp(sockets[index].buffer, "TimeString", 10) == 0)
-			{
-				sockets[index].send  = SEND;
-				//sockets[index].Action = SEND_TIME;
-				memcpy(sockets[index].buffer, &sockets[index].buffer[10], sockets[index].len - 10);
-				sockets[index].len -= 10;
-				return;
-			}
-			else if (strncmp(sockets[index].buffer, "SecondsSince1970", 16) == 0)
-			{
-				sockets[index].send  = SEND;
-				//sockets[index].Action = SEND_SECONDS;
-				memcpy(sockets[index].buffer, &sockets[index].buffer[16], sockets[index].len - 16);
-				sockets[index].len -= 16;
-				return;
-			}
-			else if (strncmp(sockets[index].buffer, "Exit", 4) == 0)
-			{
-				closesocket(msgSocket);
-				removeSocket(index);
-				return;
-			}
+			cout << "Http Server: Bad HTTP request received." << endl;
+			string msg = "HTTP/1.1 " + to_string(BAD_REQUEST) + " Bad Request\r\nContent-Length: 0\r\n\r\n";
+			strncpy(sockets[index].buffer, msg.c_str(), msg.size());
+			(sockets[index].buffer)[msg.size()] = '\0'; //add the null-terminating to make it a string
+			sockets[index].len = msg.size();
 		}
-	}
 
+		sockets[index].send = SEND;
+	}
 }
 
 void sendMessage(int index)
