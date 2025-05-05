@@ -281,11 +281,10 @@ void receiveMessage(int index)
 		sockets[index].len += bytesRecv;
 
 		//Parse HTTP request
-		HttpSocket* httpSock = reinterpret_cast<HttpSocket*>(&sockets[index]);
+		HttpSocket* httpSock = &sockets[index];
 
 		int parseResult = httpSock->ParseHttpRequest(sockets[index].buffer);
 		
-
 		if (parseResult == BAD_REQUEST) //Case: The HTTP Request was bad
 		{
 			cout << "Http Server: Bad HTTP request received." << endl;
