@@ -1,41 +1,82 @@
-#pragma once
+﻿#pragma once
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
+#include <string.h>
+#include <vector>
 
-enum HTTP_Actions { Get, Post, Put, Delete, Head, Options, Trace };
+#define BAD_REQUEST 400
+#define NOT_FULLY_PROCCESED 0
+
+
+#define MAX_LINE_LENGTH 1024
+#define MAX_HEADERS 50
 
 class HttpSocket
 {
-	SOCKET id;			// Socket handle
-	HTTP_Actions Action;
-	char* requestUrl;
-	char* body;
-	int	recv;			// Receiving?
-	int	send;			// Sending?
-	char buffer[255];
+public:
+	SOCKET id;
+	char verb[16];
+	char requestUrl[512];
+	vector<char*> headers;
+	char body[MAX_LINE_LENGTH];
+	int	recv;
+	int	send;
+	char buffer[2048];
 	int len;
 
-	string getAction() {
-		char* request = buffer;
-		return strtok(request, " ");
-	}
-	string getBody() {
-		char* request = buffer;
-		string RequestAndHeaders = strtok(request, "\r\n\r\n");
-		return buffer + RequestAndHeaders.length() + 4;
-	}
-	string getLangQueryParam() {
-		char* request = buffer;
-		char* query = strtok(request, "?");
-		query = strtok(NULL, " ");
-		if (strncmp(query, "lang=", 5) == 0) {
-			if (strncmp(query + 5, "he", 2) == 0 || strncmp(query + 5, "en", 2) == 0 || strncmp(query + 5, "fr", 2) == 0) {
+	int ParseHttpRequest(char* request) {
+		// שמירת עותק זמני כי strtok משנה את המחרוזת
+		char temp[MAX_LINE_LENGTH];
+		strncpy(temp, request, MAX_LINE_LENGTH - 1);
+		temp[MAX_LINE_LENGTH - 1] = '\0';
 
+		// שורת הבקשה הראשונה
+		char* line = strtok(temp, "\r\n");
+		if (!line) return BAD_REQUEST;
+
+		char* method = strtok(line, " ");
+		char* url = strtok(NULL, " ");
+		char* httpVersion = strtok(NULL, " ");
+
+		if (!method || !url || !httpVersion) return BAD_REQUEST;
+
+		if (!checkVerbValid(method)) return BAD_REQUEST;
+		if (!checkUrlVaild(url)) return BAD_REQUEST;
+
+		strncpy(verb, method, sizeof(verb));
+		strncpy(requestUrl, url, sizeof(requestUrl));
+
+
+		while (true) {
+			char* header = strtok(NULL, "\r\n");
+			if (!header || strlen(header) == 0) break;
+			headers.push_back(strdup(header));
+
+
+			char* bodyStart = strstr(request, "\r\n\r\n");
+			if (bodyStart) {
+				bodyStart += 4;
+				strncpy(body, bodyStart, sizeof(body));
 			}
+			else {
+				body[0] = '\0';
+			}
+
+			return NOT_FULLY_PROCCESED;
 		}
 	}
-};
 
+	bool checkVerbValid(const char* method) {
+		return strcmp(method, "GET") == 0 || strcmp(method, "POST") == 0 ||
+			strcmp(method, "PUT") == 0 || strcmp(method, "DELETE") == 0 ||
+			strcmp(method, "HEAD") == 0|| strcmp(method, "OPTIONS") == 0|| strcmp(method, "TRACE") == 0;
+	}
+
+	bool checkUrlVaild(const char* url) {
+		return url[0] == '/';
+	}
+
+};

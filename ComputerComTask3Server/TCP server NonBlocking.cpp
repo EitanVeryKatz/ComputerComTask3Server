@@ -5,19 +5,9 @@ using namespace std;
 #include <winsock2.h>
 #include <string.h>
 #include <time.h>
+#include "HttpSocket.h"
 
-struct HttpSocket
-{
-	SOCKET id;			// Socket handle
-	HTTP_Actions Action;
-	int	recv;			// Receiving?
-	int	send;			// Sending?
-	char buffer[255];
-	int len;
-	
-};
 
-enum HTTP_Actions { Get,Post,Put,Delete,Head,Options, Trace };
 const int HTTP_PORT = 8080;
 const int MAX_SOCKETS = 60;
 const int EMPTY = 0;
