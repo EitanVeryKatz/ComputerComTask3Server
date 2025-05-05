@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
@@ -319,27 +320,27 @@ void sendMessage(int index)
 	char sendBuff[255];
 
 	SOCKET msgSocket = sockets[index].id;
-	if (sockets[index].Action == SEND_TIME)
-	{
-		// Answer client's request by the current time string.
-		
-		// Get the current time.
-		time_t timer;
-		time(&timer);
-		// Parse the current time to printable string.
-		strcpy(sendBuff, ctime(&timer));
-		sendBuff[strlen(sendBuff)-1] = 0; //to remove the new-line from the created string
-	}
-	else if(sockets[index].Action == SEND_SECONDS)
-	{
-		// Answer client's request by the current time in seconds.
-		
-		// Get the current time.
-		time_t timer;
-		time(&timer);
-		// Convert the number to string.
-		itoa((int)timer, sendBuff, 10);		
-	}
+	//if (sockets[index].verb == SEND_TIME)
+	//{
+	//	// Answer client's request by the current time string.
+	//	
+	//	// Get the current time.
+	//	time_t timer;
+	//	time(&timer);
+	//	// Parse the current time to printable string.
+	//	strcpy(sendBuff, ctime(&timer));
+	//	sendBuff[strlen(sendBuff)-1] = 0; //to remove the new-line from the created string
+	//}
+	//else if(sockets[index].verb == SEND_SECONDS)
+	//{
+	//	// Answer client's request by the current time in seconds.
+	//	
+	//	// Get the current time.
+	//	time_t timer;
+	//	time(&timer);
+	//	// Convert the number to string.
+	//	itoa((int)timer, sendBuff, 10);		
+	//}
 
 	bytesSent = send(msgSocket, sendBuff, (int)strlen(sendBuff), 0);
 	if (SOCKET_ERROR == bytesSent)

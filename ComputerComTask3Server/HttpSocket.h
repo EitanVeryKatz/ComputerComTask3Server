@@ -1,5 +1,6 @@
 ﻿#pragma once
 #define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
@@ -53,7 +54,7 @@ public:
 		while (true) {
 			char* header = strtok(NULL, "\r\n");
 			if (!header || strlen(header) == 0) break;
-			headers.push_back(strdup(header));
+			headers.push_back(_strdup(header));
 
 
 			char* bodyStart = strstr(request, "\r\n\r\n");
@@ -77,6 +78,11 @@ public:
 
 	bool checkUrlVaild(const char* url) {
 		return url[0] == '/';
+
+	}
+
+	char* getQueryParamsFromUrl() {
+		return strstr(requestUrl, "?");
 	}
 
 };
