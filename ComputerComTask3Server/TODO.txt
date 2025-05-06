@@ -1,21 +1,24 @@
 
-2.in recieve: activate parsing and and status code (?)
-5.write html in all suppurted langs
-6.in send: add switch case for action
-7.in send: for action add handling
+
+To Do:
+
+1.write htmls
+2.add endpoints for each http verb supported;
 
 done:
 1.update struct to include action and uri
 2.add parsing function
 3.in recieve: activate parsing and and status code <--
+6.in send: add switch case for action
 
 body: 
 
-now the parsing function Updates fields in class and returns 400 if request invalid or 0 else;
+did a little cosmetic changes to recv (didnt interfere w/ your logic).
+added procces request func in send (rerrouts to procces based on verb(switchcase))
+noticed what you told me about the while loop, fixed it.
 
-I think I finished everything needed in receive, because handling message is in sendmessage() function.
-waiting on your thoughts.
--Gal
 
 *Didn't run anything yet
-**I still think you had a typo with the } and the while true and you meant to do the return after the loop or smt like this, take a look at this please.
+** we need to delegate between us the endpoints and to figure out what will the usage protocol for our server will be.
+
+-Eitan
