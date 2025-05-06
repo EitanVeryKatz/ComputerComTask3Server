@@ -29,12 +29,12 @@ public:
 	int len;
 
 	int ParseHttpRequest(char* request) {
-		
+
 		char temp[MAX_LINE_LENGTH];
 		strncpy(temp, request, MAX_LINE_LENGTH - 1);
 		temp[MAX_LINE_LENGTH - 1] = '\0';
 
-		
+
 		char* line = strtok(temp, "\r\n");//get request line
 		if (!line) return BAD_REQUEST;
 
@@ -51,29 +51,32 @@ public:
 		strncpy(requestUrl, url, sizeof(requestUrl));//fill all fields if valid request
 
 
-		while (true) {
-			char* header = strtok(NULL, "\r\n");
-			if (!header || strlen(header) == 0) break;
-			headers.push_back(_strdup(header));
-			//get all headers seperatly in vector
 
-			char* bodyStart = strstr(request, "\r\n\r\n");
-			if (bodyStart) {
-				bodyStart += 4;
-				strncpy(body, bodyStart, sizeof(body));
-			}
-			else {
-				body[0] = '\0';
-			}
-
-			return NOT_FULLY_PROCCESED;
+		char* headersStr = strtok(NULL, "\r\n\r\n");
+		char* header = strtok(headersStr, "\r\n");
+		while (header != NULL) {
+			headers.push_back(header);
+			header = strtok(NULL, "\r\n");
 		}
+		//get all headers seperatly in vector
+
+		char* bodyStart = strstr(request, "\r\n\r\n");
+		if (bodyStart) {
+			bodyStart += 4;
+			strncpy(body, bodyStart, sizeof(body));
+		}
+		else {
+			return BAD_REQUEST;
+			//no appearance of "\r\n\r\n"
+		}
+
+		return NOT_FULLY_PROCCESED;
 	}
 
 	bool checkVerbValid(const char* method) {
 		return strcmp(method, "GET") == 0 || strcmp(method, "POST") == 0 ||
 			strcmp(method, "PUT") == 0 || strcmp(method, "DELETE") == 0 ||
-			strcmp(method, "HEAD") == 0|| strcmp(method, "OPTIONS") == 0|| strcmp(method, "TRACE") == 0;
+			strcmp(method, "HEAD") == 0 || strcmp(method, "OPTIONS") == 0 || strcmp(method, "TRACE") == 0;
 	}
 
 	bool checkUrlVaild(const char* url) {
