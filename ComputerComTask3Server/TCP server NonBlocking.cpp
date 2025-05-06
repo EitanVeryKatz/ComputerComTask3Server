@@ -281,11 +281,9 @@ void receiveMessage(int index)
 		sockets[index].len += bytesRecv;
 
 		//Parse HTTP request
-		HttpSocket* httpSock = &sockets[index];
-
-		int parseResult = httpSock->ParseHttpRequest(sockets[index].buffer);
+		sockets[index].statusCode = sockets[index].ParseHttpRequest();
 		
-		if (parseResult == BAD_REQUEST) //Case: The HTTP Request was bad
+		if (sockets[index].statusCode == BAD_REQUEST) //Case: The HTTP Request was bad
 		{
 			cout << "Http Server: Bad HTTP request received." << endl;
 			string msg = "HTTP/1.1 " + to_string(BAD_REQUEST) + " Bad Request\r\nContent-Length: 0\r\n\r\n";
@@ -301,7 +299,7 @@ void receiveMessage(int index)
 void sendMessage(int index)
 {
 	int bytesSent = 0;
-	char sendBuff[255];
+	char* sendBuff;
 
 	SOCKET msgSocket = sockets[index].id;
 	//if (sockets[index].verb == SEND_TIME)
@@ -326,6 +324,8 @@ void sendMessage(int index)
 	//	itoa((int)timer, sendBuff, 10);		
 	//}
 
+	sendBuff = sockets[index].processRequest();
+
 	bytesSent = send(msgSocket, sendBuff, (int)strlen(sendBuff), 0);
 	if (SOCKET_ERROR == bytesSent)
 	{
@@ -334,7 +334,7 @@ void sendMessage(int index)
 	}
 
 	cout<<"Http Server: Sent: "<<bytesSent<<"\\"<<strlen(sendBuff)<<" bytes of \""<<sendBuff<<"\" message.\n";	
-
+	sockets[index].headers.clear();
 	sockets[index].send = IDLE;
 }
 

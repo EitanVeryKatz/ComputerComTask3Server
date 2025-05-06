@@ -27,16 +27,18 @@ public:
 	int	send;
 	char buffer[2048];
 	int len;
+	int statusCode;
 
-	int ParseHttpRequest(char* request) {
-
+	int ParseHttpRequest() {
+		char* request = buffer;
 		char temp[MAX_LINE_LENGTH];
 		strncpy(temp, request, MAX_LINE_LENGTH - 1);
 		temp[MAX_LINE_LENGTH - 1] = '\0';
 
 
 		char* line = strtok(temp, "\r\n");//get request line
-		if (!line) return BAD_REQUEST;
+		if (!line)
+			return BAD_REQUEST;
 
 		char* method = strtok(line, " ");
 		char* url = strtok(NULL, " ");
@@ -73,6 +75,35 @@ public:
 		return NOT_FULLY_PROCCESED;
 	}
 
+	char* processRequest() {
+		if (verb == "GET") {
+			return Get();
+		}
+		else if (verb == "POST") {
+			return Post();
+		}
+		else if (verb == "DELETE") {
+			return Delete();
+		}
+		else if (verb == "PUT") {
+			return Put();
+		}
+		else if (verb == "OPTIONS") {
+			return Options();
+		}
+		else if (verb == "HEAD") {
+			return Head();
+		}
+		else if (verb == "TRACE") {
+			return Trace();
+		}
+		else {
+			throw("HTTP method not supported");
+		}
+	}
+
+private:
+
 	bool checkVerbValid(const char* method) {
 		return strcmp(method, "GET") == 0 || strcmp(method, "POST") == 0 ||
 			strcmp(method, "PUT") == 0 || strcmp(method, "DELETE") == 0 ||
@@ -88,4 +119,13 @@ public:
 		return strstr(requestUrl, "?");
 	}
 
+	
+
+	char* Get();
+	char* Post();
+	char* Delete();
+	char* Put();
+	char* Options();
+	char* Head();
+	char* Trace();
 };
