@@ -27,6 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt" />
+    <Text Include="he.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HttpSocket.h">

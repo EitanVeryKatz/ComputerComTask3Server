@@ -76,25 +76,25 @@ public:
 	}
 
 	char* processRequest() {
-		if (verb == "GET") {
+		if (strcmp(verb, "GET") == 0) {
 			return Get();
 		}
-		else if (verb == "POST") {
+		else if (strcmp(verb, "POST") == 0) {
 			return Post();
 		}
-		else if (verb == "DELETE") {
+		else if (strcmp(verb, "DELETE") == 0) {
 			return Delete();
 		}
-		else if (verb == "PUT") {
+		else if (strcmp(verb, "PUT") == 0) {
 			return Put();
 		}
-		else if (verb == "OPTIONS") {
+		else if (strcmp(verb, "OPTIONS") == 0) {
 			return Options();
 		}
-		else if (verb == "HEAD") {
+		else if (strcmp(verb, "HEAD") == 0) {
 			return Head();
 		}
-		else if (verb == "TRACE") {
+		else if (strcmp(verb, "TRACE") == 0) {
 			return Trace();
 		}
 		else {

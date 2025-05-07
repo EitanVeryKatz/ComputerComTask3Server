@@ -132,6 +132,7 @@
     <ClCompile Include="TCP server NonBlocking.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="he.txt" />
     <Text Include="TODO.txt" />
   </ItemGroup>
   <ItemGroup>
