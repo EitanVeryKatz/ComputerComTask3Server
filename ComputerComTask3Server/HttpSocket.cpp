@@ -194,26 +194,9 @@ void HttpSocket::Put() {
 
 void HttpSocket::Delete() {
 
-    bool validContentType = false;
-    const char badRequest[] = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
-
-    for (const auto& header : headers) {
-        if (strstr(header, "Content-Type:") != nullptr) {
-            if (strstr(header, "text/html") != nullptr) {
-                validContentType = true;
-            }
-        }
-    }
-
-    if (!validContentType) {
-
-        strncpy(buffer, badRequest, sizeof(badRequest));
-        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
-        return;
-    }
-
     std::string filePath = getFilePathFromUrl(requestUrl);
     if (filePath.empty()) {
+        const char badRequest[] = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
         strncpy(buffer, badRequest, sizeof(badRequest));
         buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
         return;
