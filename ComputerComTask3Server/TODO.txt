@@ -1,9 +1,37 @@
 
 
-To Do:
+GAL:
+POST-
+PUT-
+DELETE-
 
-1.write htmls
-2.add endpoints for each http verb supported;
+
+add data stracture to hold post shit and managable by your nethods
+
+EITAN:
+
+make carmion.html for every lang
+
+
+HEAD- get html headers
+GET- get html based on lang
+TRACE- echo (askGPT)
+V-OPTIONS- "constexpr for all allow ask GPT"
+
+
+
+BOTH:
+for socket in main:
+	if timeout:
+		disconnect()
+
+
+
+
+
+
+
+
 
 done:
 1.update struct to include action and uri

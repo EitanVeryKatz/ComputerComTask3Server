@@ -26,7 +26,7 @@ void acceptConnection(int index);
 void receiveMessage(int index);
 void sendMessage(int index);
 
-struct HttpSocket sockets[MAX_SOCKETS]={0};
+HttpSocket sockets[MAX_SOCKETS]={0};
 int socketsCount = 0;
 
 
@@ -324,7 +324,8 @@ void sendMessage(int index)
 	//	itoa((int)timer, sendBuff, 10);		
 	//}
 
-	sendBuff = sockets[index].processRequest();
+	sockets[index].processRequest();
+	sendBuff = sockets[index].buffer;
 
 	bytesSent = send(msgSocket, sendBuff, (int)strlen(sendBuff), 0);
 	if (SOCKET_ERROR == bytesSent)
