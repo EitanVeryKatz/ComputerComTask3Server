@@ -1,5 +1,6 @@
 #include "HttpSocket.h"
 #include <fstream>
+#include <algorithm>
 
 
 int HttpSocket::ParseHttpRequest() {
@@ -96,3 +97,139 @@ void HttpSocket::Head() {
 	strcpy(buffer, header);
 }
 
+std::string HttpSocket::getFilePathFromUrl(const char* url) {
+    const char* baseUrl = "/files/";
+    if (strncmp(url, baseUrl, strlen(baseUrl)) != 0) {
+        return "";
+    }
+
+    std::string filename = url + strlen(baseUrl);
+    std::string filePath = "c:/temp/" + filename;
+
+    //Replace forward slashes with backslashes for Windows compatibility
+    std::replace(filePath.begin(), filePath.end(), '/', '\\');
+
+    return filePath;
+}
+
+void HttpSocket::Post() {
+
+    bool validContentType = false;
+
+    //Check for valid headers
+    for (const auto& header : headers) {
+        if (strstr(header, "Content-Type:") != nullptr) {
+            if (strstr(header, "text/plain") != nullptr || strstr(header, "text/html") != nullptr) {
+                validContentType = true;
+            }
+        }
+    }
+
+    if (!validContentType) {
+        const char badRequest[] = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
+        strncpy(buffer, badRequest, sizeof(badRequest));
+        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
+        return;
+    }
+
+    //Print the body to the console
+    std::cout << "POST Body Content:" << std::endl << body << std::endl;
+
+    const char ok[] = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
+    strncpy(buffer, ok, sizeof(ok));
+    buffer[sizeof(ok)] = '\0'; //add the null-terminating to make it a string
+}
+
+void HttpSocket::Put() {
+
+    bool validContentType = false;
+    const char badRequest[] = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
+
+    for (const auto& header : headers) {
+        if (strstr(header, "Content-Type:") != nullptr) {
+            if (strstr(header, "text/html") != nullptr) {
+                validContentType = true;
+            }
+        }
+    }
+
+    if (!validContentType) {
+        strncpy(buffer, badRequest, sizeof(badRequest));
+        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
+        return;
+    }
+
+    std::string filePath = getFilePathFromUrl(requestUrl);
+    if (filePath.empty()) {
+        strncpy(buffer, badRequest, sizeof(badRequest));
+        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
+        return;
+    }
+
+    if (strlen(body) == 0) {
+        const char noContent[] = "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n";
+        strncpy(buffer, noContent, sizeof(noContent));
+        buffer[sizeof(noContent)] = '\0'; //add the null-terminating to make it a string
+        return;
+    }
+
+    //Attempt to open the file and write to it
+    std::ofstream file(filePath);
+    if (!file) { //Case: file wasn't found or no permissions to write
+        const char notFound[] = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
+        strncpy(buffer, notFound, sizeof(notFound));
+        buffer[sizeof(notFound)] = '\0'; //add the null-terminating to make it a string
+        return;
+    }
+
+    file << body;
+    file.close();
+
+    std::cout << "File " << filePath << " successfully updated";
+
+    const char ok[] = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
+    strncpy(buffer, ok, sizeof(ok));
+    buffer[sizeof(ok)] = '\0'; //add the null-terminating to make it a string
+}
+
+void HttpSocket::Delete() {
+
+    bool validContentType = false;
+    const char badRequest[] = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
+
+    for (const auto& header : headers) {
+        if (strstr(header, "Content-Type:") != nullptr) {
+            if (strstr(header, "text/html") != nullptr) {
+                validContentType = true;
+            }
+        }
+    }
+
+    if (!validContentType) {
+
+        strncpy(buffer, badRequest, sizeof(badRequest));
+        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
+        return;
+    }
+
+    std::string filePath = getFilePathFromUrl(requestUrl);
+    if (filePath.empty()) {
+        strncpy(buffer, badRequest, sizeof(badRequest));
+        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
+        return;
+    }
+
+    //Attempt to delete the file
+    if (remove(filePath.c_str())) {
+        const char notFound[] = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
+        strncpy(buffer, notFound, sizeof(notFound));
+        buffer[sizeof(notFound)] = '\0'; //add the null-terminating to make it a string
+        return;
+    }
+
+    std::cout << "File " << filePath << " successfully deleted";
+
+    const char ok[] = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
+    strncpy(buffer, ok, sizeof(ok));
+    buffer[sizeof(ok)] = '\0'; //add the null-terminating to make it a string
+}

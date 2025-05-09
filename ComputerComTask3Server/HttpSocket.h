@@ -81,7 +81,7 @@ private:
 		return strstr(requestUrl, "?");
 	}
 
-	
+	std::string getFilePathFromUrl(const char* url);
 
 	void Get();
 	void Post();
