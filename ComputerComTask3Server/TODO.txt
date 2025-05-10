@@ -10,12 +10,12 @@ add data stracture to hold post shit and managable by your nethods
 
 EITAN:
 
-make carmion.html for every lang
+V-make carmion.html for every lang
 
 
-HEAD- get html headers
-GET- get html based on lang
-TRACE- echo (askGPT)
+V-HEAD- get html headers
+V-GET- get html based on lang
+V-TRACE- echo (askGPT)
 V-OPTIONS- "constexpr for all allow ask GPT"
 
 

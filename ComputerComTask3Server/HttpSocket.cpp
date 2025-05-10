@@ -21,6 +21,24 @@ int HttpSocket::ParseHttpRequest() {
 	return NOT_FULLY_PROCCESED;
 }
 
+void HttpSocket::Trace() {
+	// Define the HTTP TRACE response
+	const char* response =
+		"HTTP/1.1 200 OK\r\n"
+		"Content-Type: message/http\r\n"
+		"Content-Length: %zu\r\n"
+		"\r\n%s";
+
+	size_t contentLength = strlen(buffer);
+	size_t headerLength = snprintf(nullptr, 0, response, contentLength, buffer);
+	char* fullResponse = new char[headerLength + 1];
+
+	snprintf(fullResponse, headerLength + 1, response, contentLength, buffer);
+	strcpy(buffer, fullResponse);
+	delete[] fullResponse;
+
+}
+
 void HttpSocket::Options()
 {
 	// Define the HTTP OPTIONS response
@@ -58,44 +76,7 @@ void HttpSocket::BuildHttpResponse(const char* content) {
 	delete[] response;
 }
 
-void HttpSocket::Head() {
-	// Define the HTTP HEAD response
-	char* query = getQueryParamsFromUrl();
-	char* htmlFilePath = new char;
-	if (checkValidQuery(query)) {
-		//parse query
-		char* key = strtok(query, "=");
-		char* value = strtok(nullptr, "&");
-		char* lang = value;
 
-		if (strcmp(lang, "he") == 0) {
-			strcpy(htmlFilePath, "he.html");
-		}
-		else if (strcmp(lang, "en") == 0) {
-			strcpy(htmlFilePath, "en.html");
-		}
-		else if (strcmp(lang, "fr") == 0) {
-			strcpy(htmlFilePath, "fr.html");
-		}
-		else
-			throw (BAD_REQUEST);
-	}
-	else {
-		strcpy(htmlFilePath, "he.html");
-	}
-	//open file
-	std::ifstream carmion(htmlFilePath);
-	carmion.read(body, sizeof(body));
-	if (carmion.gcount() == 0) {
-		throw (NOT_FOUND);
-	}
-	// Define the HTTP HEAD response
-	const char* header = "HTTP/1.1 200 OK\r\n"
-		"Content-Type: text/html\r\n"
-		"Content-Length: %zu\r\n"
-		"\r\n";
-	strcpy(buffer, header);
-}
 
 std::string HttpSocket::getFilePathFromUrl(const char* url) {
     const char* baseUrl = "/files/";
@@ -215,4 +196,49 @@ void HttpSocket::Delete() {
     const char ok[] = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
     strncpy(buffer, ok, sizeof(ok));
     buffer[sizeof(ok)] = '\0'; //add the null-terminating to make it a string
+}
+
+
+void HttpSocket::Head() {
+
+	//parse query
+	char* query = getQueryParamsFromUrl();
+	char htmlFilePath[64];
+	if (checkValidQuery(query)) {
+		//parse query
+		char* key = strtok(query, "=");
+		char* value = strtok(nullptr, "&");
+		char* lang = value;
+
+		if (strcmp(lang, "he") == 0) {
+			strcpy(htmlFilePath, "he.html");
+		}
+		else if (strcmp(lang, "en") == 0) {
+			strcpy(htmlFilePath, "en.html");
+		}
+		else if (strcmp(lang, "fr") == 0) {
+			strcpy(htmlFilePath, "fr.html");
+		}
+		else
+			throw(BAD_REQUEST);
+	}
+	else {
+		strcpy(htmlFilePath, "he.html");
+	}
+	//open file
+	std::ifstream carmion(htmlFilePath);
+	carmion.read(body, sizeof(body));
+	if (carmion.gcount() == 0) {
+		throw(NOT_FOUND);
+	}
+	// Define the HTTP HEAD response
+	const char* header = "HTTP/1.1 200 OK\r\n"
+		"Content-Type: text/html\r\n"
+		"Content-Length: %zu\r\n"
+		"\r\n";
+	size_t contentLength = strlen(body);
+	size_t headerLength = snprintf(nullptr, 0, header, contentLength);
+	char* response = new char[headerLength + contentLength + 1];
+	snprintf(response, headerLength + 1, header, contentLength);
+	strcpy(buffer, response);
 }
