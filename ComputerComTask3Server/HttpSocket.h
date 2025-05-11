@@ -12,13 +12,17 @@ using namespace std;
 #define NOT_FULLY_PROCCESED 0
 #define OK 200
 #define NOT_FOUND 404
-#define CREATED 201
+#define NO_CONTENT 204
+
 
 #define MAX_LINE_LENGTH 8192
 #define MAX_HEADERS 50
 #define NOT_FOUND_MSG "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
 #define BAD_REQUEST_MSG "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"
-
+#define OK_EMPTY_MSG "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
+#define OK_FORMAT_MSG "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n"
+#define OPTIONS_MSG "HTTP/1.1 200 OK\r\nAllow: GET, POST, PUT, DELETE, OPTIONS, HEAD, TRACE\r\nContent-Length: 0\r\n\r\n"
+#define NO_CONTENT_MSG "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n"
 
 
 class HttpSocket

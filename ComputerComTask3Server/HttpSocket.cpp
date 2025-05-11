@@ -42,17 +42,11 @@ int HttpSocket::ParseHttpRequest() {
 
 void HttpSocket::Trace() {
 	// Define the HTTP TRACE response
-	const char* response =
-		"HTTP/1.1 200 OK\r\n"
-		"Content-Type: message/http\r\n"
-		"Content-Length: %zu\r\n"
-		"\r\n%s";
-
 	size_t contentLength = strlen(buffer);
-	size_t headerLength = snprintf(nullptr, 0, response, contentLength, buffer);
+	size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength, buffer);
 	char* fullResponse = new char[headerLength + 1];
 
-	snprintf(fullResponse, headerLength + 1, response, contentLength, buffer);
+	snprintf(fullResponse, headerLength + 1, OK_FORMAT_MSG, contentLength, buffer);
 	strcpy(buffer, fullResponse);
 	delete[] fullResponse;
 
@@ -60,15 +54,9 @@ void HttpSocket::Trace() {
 
 void HttpSocket::Options()
 {
-	// Define the HTTP OPTIONS response
-	const char* response =
-		"HTTP/1.1 200 OK\r\n"
-		"Allow: OPTIONS, GET, POST, PUT, DELETE, HEAD\r\n"
-		"Content-Length: 0\r\n"
-		"\r\n";
-
+	
 	// Copy the response into the buffer
-	strcpy(buffer, response);
+	strcpy(buffer, OPTIONS_MSG);
 }
 
 
@@ -80,15 +68,12 @@ void HttpSocket::Get() {
 
 //build http get response
 void HttpSocket::BuildHttpResponse(const char* content) {
-	const char* header = "HTTP/1.1 200 OK\r\n"
-		"Content-Type: text/html\r\n"
-		"Content-Length: %zu\r\n"
-		"\r\n";
+	
 	size_t contentLength = strlen(content);
-	size_t headerLength = snprintf(nullptr, 0, header, contentLength);
+	size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
 	char* response = new char[headerLength + contentLength + 1];
 
-	snprintf(response, headerLength + 1, header, contentLength);
+	snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
 	strcat(response, content);
 	
 	strcpy(buffer,response);
@@ -126,18 +111,13 @@ void HttpSocket::Post() {
     }
 
     if (!validContentType) {
-        const char badRequest[] = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
-        strncpy(buffer, badRequest, sizeof(badRequest));
-        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
-        return;
+		throw(BAD_REQUEST); //Case: Invalid Content-Type header
     }
 
     //Print the body to the console
     std::cout << "POST Body Content:" << std::endl << body << std::endl;
 
-    const char ok[] = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
-    strncpy(buffer, ok, sizeof(ok));
-    buffer[sizeof(ok)] = '\0'; //add the null-terminating to make it a string
+    strcpy(buffer, OK_EMPTY_MSG);
 }
 
 bool HttpSocket::htmlRequestChecker() {
@@ -173,19 +153,14 @@ void HttpSocket::Put() {
     }
 
     if (strlen(body) == 0) {
-        const char noContent[] = "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n";
-        strncpy(buffer, noContent, sizeof(noContent));
-        buffer[sizeof(noContent)] = '\0'; //add the null-terminating to make it a string
-        return;
+		throw(NO_CONTENT);
     }
 
     //Attempt to open the file and write to it
     std::ofstream file(filePath);
     if (!file) { //Case: file wasn't found or no permissions to write
-        const char notFound[] = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
-        strncpy(buffer, notFound, sizeof(notFound));
-        buffer[sizeof(notFound)] = '\0'; //add the null-terminating to make it a string
-        return;
+		file.close();
+		throw(NOT_FOUND);
     }
 
     file << body;
@@ -193,34 +168,24 @@ void HttpSocket::Put() {
 
     std::cout << "File " << filePath << " successfully updated";
 
-    const char ok[] = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
-    strncpy(buffer, ok, sizeof(ok));
-    buffer[sizeof(ok)] = '\0'; //add the null-terminating to make it a string
+	strcpy(buffer, OK_EMPTY_MSG);
 }
 
 void HttpSocket::Delete() {
 
     std::string filePath = getFilePathFromUrl(requestUrl);
     if (filePath.empty()) {
-        const char badRequest[] = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
-        strncpy(buffer, badRequest, sizeof(badRequest));
-        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
-        return;
+        throw(BAD_REQUEST); //Case: Invalid URL
     }
 
     //Attempt to delete the file
     if (remove(filePath.c_str())) {
-        const char notFound[] = "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n";
-        strncpy(buffer, notFound, sizeof(notFound));
-        buffer[sizeof(notFound)] = '\0'; //add the null-terminating to make it a string
-        return;
+		throw(NOT_FOUND); //Case: file wasn't found or no permissions to delete
     }
 
     std::cout << "File " << filePath << " successfully deleted";
 
-    const char ok[] = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n";
-    strncpy(buffer, ok, sizeof(ok));
-    buffer[sizeof(ok)] = '\0'; //add the null-terminating to make it a string
+	strcpy(buffer, OK_EMPTY_MSG);
 }
 
 bool HttpSocket::checkValidQuery(char* query) {
@@ -286,11 +251,11 @@ void HttpSocket::Head() {
 		throw(NOT_FOUND);
 	}
 	// Define the HTTP HEAD response
-	const char* header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n";
+	
 	size_t contentLength = strlen(body);
-	size_t headerLength = snprintf(nullptr, 0, header, contentLength);
+	size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
 	char* response = new char[headerLength + contentLength + 1];
-	snprintf(response, headerLength + 1, header, contentLength);
+	snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
 	strcpy(buffer, response);
 }
 

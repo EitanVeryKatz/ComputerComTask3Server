@@ -313,6 +313,10 @@ void sendMessage(int index)
 			cout << "Http Server: Error: " << NOT_FOUND_MSG << endl;
 			strcpy(sockets[index].buffer, NOT_FOUND_MSG);
 		}
+		else if (statusCode == NO_CONTENT) {
+			cout << "Http Server: Error: " << NO_CONTENT_MSG << endl;
+			strcpy(sockets[index].buffer, NO_CONTENT_MSG);
+		}
 		else {
 			cout << "Http Server: Error: " << BAD_REQUEST_MSG << endl;
 			strcpy(sockets[index].buffer, BAD_REQUEST_MSG);

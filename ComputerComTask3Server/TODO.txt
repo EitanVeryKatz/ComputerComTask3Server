@@ -1,5 +1,4 @@
-- fix html pictures
-- make sure we handle all exceptions
+- link html pictures
 - define all consts
 - document and buetify files
 - add protocol
