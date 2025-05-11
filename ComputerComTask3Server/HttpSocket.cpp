@@ -249,14 +249,15 @@ void HttpSocket::Head() {
 	//parse query
 	char* query = getQueryParamsFromUrl();
 	
-	char htmlFilesPath[32];
+	char htmlFilesPath[32] = {};
+	strcpy(htmlFilesPath, "C:\\temp\\");//path to files
 	if (checkValidQuery(query)) {
 		//parse query
 		char* key = strtok(query, "=");
 		char* lang = strtok(nullptr, "\0");
 		
 		
-		strcpy(htmlFilesPath, "C:\\temp\\");//path to files
+		
 
 		if (strcmp(lang, "he") == 0) {
 			strcat(htmlFilesPath, "he.html");
@@ -275,6 +276,11 @@ void HttpSocket::Head() {
 	}
 	//open file
 	std::ifstream carmion(htmlFilesPath);
+	/*std::ifstream carmion("C:\\temp\\en.html");*/
+	if (!carmion.is_open()) {
+		throw(NOT_FOUND);
+		
+	}
 	carmion.read(body, sizeof(body));
 	if (carmion.gcount() == 0) {
 		throw(NOT_FOUND);
