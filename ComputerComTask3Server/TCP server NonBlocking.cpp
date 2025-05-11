@@ -6,7 +6,6 @@ using namespace std;
 #include <winsock2.h>
 #include "HttpSocket.h"
 
-
 const int HTTP_PORT = 8080;
 const int MAX_SOCKETS = 60;
 const int EMPTY = 0;
@@ -315,6 +314,10 @@ void sendMessage(int index)
 		else if (statusCode == NOT_ACCEPTABLE) {
 			cout << "Http Server: Error: " << NOT_ACCEPTABLE_MSG << endl;
 			strcpy(sockets[index].buffer, NOT_ACCEPTABLE_MSG);
+		}
+		else if (statusCode == IM_A_TEAPOT) {
+			cout << "Http Server: Error: " << IM_A_TEAPOT_MSG << endl;
+			strcpy(sockets[index].buffer, IM_A_TEAPOT_MSG);
 		}
 		else {
 			cout << "Http Server: Error: " << BAD_REQUEST_MSG << endl;

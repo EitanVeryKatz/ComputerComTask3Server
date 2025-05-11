@@ -12,7 +12,9 @@ using namespace std;
 #define OK 200
 #define NOT_FOUND 404
 #define NOT_ACCEPTABLE 406
+#define IM_A_TEAPOT 418
 
+#define TEAPOT "I'm a teapot"
 
 #define MAX_LINE_LENGTH 8192
 #define MAX_HEADERS 50
@@ -21,8 +23,8 @@ using namespace std;
 #define OK_EMPTY_MSG "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
 #define OK_FORMAT_MSG "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n"
 #define OPTIONS_MSG "HTTP/1.1 200 OK\r\nAllow: GET, POST, PUT, DELETE, OPTIONS, HEAD, TRACE\r\nContent-Length: 0\r\n\r\n"
-#define NOT_ACCEPTABLE_MSG "HTTP/1.1 406 Not Acceptable\r\nContent-Type: text/plain\r\nContent-Length: 24\r\n\r\n406 Not Acceptable\r\n"
-
+#define NOT_ACCEPTABLE_MSG "HTTP/1.1 406 Not Acceptable\r\nContent-Type: text/plain\r\nContent-Length: 20\r\n\r\n406 Not Acceptable\r\n"
+#define IM_A_TEAPOT_MSG "HTTP/1.1 418 I'm a teapot\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\nI'm a teapot.\r\n"
 
 class HttpSocket
 {

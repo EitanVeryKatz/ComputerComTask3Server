@@ -2,6 +2,7 @@
 - define all consts
 - document and buetify files
 - add protocol (Gal)
+- Make sure there are no double prints or large prints in the server's cmd
 
 Fixed memory leaks, beautified abit, and added cosmetic changes (Compiled)
 -Gal

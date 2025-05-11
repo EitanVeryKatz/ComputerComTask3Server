@@ -92,6 +92,9 @@ std::string HttpSocket::getFilePathFromUrl(const char* url) const {
 
 void HttpSocket::Post() {
 
+	if (body[0] == '\0') //Case: no body was sent
+		throw(NOT_ACCEPTABLE);
+
     bool validContentType = false;
 
     //Check for valid headers
@@ -103,12 +106,15 @@ void HttpSocket::Post() {
         }
     }
 
-    if (!validContentType) {
-		throw(BAD_REQUEST); //Case: Invalid Content-Type header
-    }
+    if (!validContentType) //Case: Invalid Content-Type header
+		throw(BAD_REQUEST);
 
-    //Print the body to the console
-    std::cout << "POST Body Content:" << std::endl << body << std::endl;
+	//Print the body to the console
+	std::cout << "POST Body Content:" << std::endl << body << std::endl;
+
+	//First, print the post message, then check for easter egg
+	if (strcmp(body, TEAPOT) == 0) //Easter egg
+		throw(IM_A_TEAPOT);
 
     strcpy(buffer, OK_EMPTY_MSG);
 }
