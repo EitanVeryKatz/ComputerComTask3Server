@@ -1,12 +1,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
-#include <sstream>
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
-#include <string.h>
-#include <time.h>
 #include "HttpSocket.h"
 
 
@@ -119,6 +116,8 @@ void main()
         return;
 	}
 	addSocket(listenSocket, LISTEN);
+
+	std::cout << "Http server listening on port " << HTTP_PORT << "..." << std::endl;
 
     // Accept connections and handles them one by one.
 	while (true)
@@ -286,7 +285,7 @@ void receiveMessage(int index)
 		if (sockets[index].statusCode == BAD_REQUEST) //Case: The HTTP Request was bad
 		{
 			cout << "Http Server: Bad HTTP request received." << endl;
-			string msg = "HTTP/1.1 " + to_string(BAD_REQUEST) + " Bad Request\r\nContent-Length: 0\r\n\r\n";
+			string msg = BAD_REQUEST_MSG;
 			strncpy(sockets[index].buffer, msg.c_str(), msg.size());
 			(sockets[index].buffer)[msg.size()] = '\0'; //add the null-terminating to make it a string
 			sockets[index].len = msg.size();
@@ -313,9 +312,9 @@ void sendMessage(int index)
 			cout << "Http Server: Error: " << NOT_FOUND_MSG << endl;
 			strcpy(sockets[index].buffer, NOT_FOUND_MSG);
 		}
-		else if (statusCode == NO_CONTENT) {
-			cout << "Http Server: Error: " << NO_CONTENT_MSG << endl;
-			strcpy(sockets[index].buffer, NO_CONTENT_MSG);
+		else if (statusCode == NOT_ACCEPTABLE) {
+			cout << "Http Server: Error: " << NOT_ACCEPTABLE_MSG << endl;
+			strcpy(sockets[index].buffer, NOT_ACCEPTABLE_MSG);
 		}
 		else {
 			cout << "Http Server: Error: " << BAD_REQUEST_MSG << endl;
@@ -323,8 +322,6 @@ void sendMessage(int index)
 		}
 	}
 	sendBuff = sockets[index].buffer;
-
-	
 
 	bytesSent = send(msgSocket, sendBuff, (int)strlen(sendBuff), 0);
 	if (SOCKET_ERROR == bytesSent)

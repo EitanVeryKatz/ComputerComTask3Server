@@ -18,9 +18,6 @@
     <ClCompile Include="TCP server NonBlocking.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HttpDereferancer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="HttpSocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

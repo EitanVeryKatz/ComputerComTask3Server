@@ -127,7 +127,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="HttpDereferancer.cpp" />
     <ClCompile Include="HttpSocket.cpp" />
     <ClCompile Include="TCP server NonBlocking.cpp" />
   </ItemGroup>

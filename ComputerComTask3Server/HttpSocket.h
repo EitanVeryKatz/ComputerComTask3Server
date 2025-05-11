@@ -5,14 +5,13 @@
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
-#include <string.h>
 #include <vector>
 
 #define BAD_REQUEST 400
 #define NOT_FULLY_PROCCESED 0
 #define OK 200
 #define NOT_FOUND 404
-#define NO_CONTENT 204
+#define NOT_ACCEPTABLE 406
 
 
 #define MAX_LINE_LENGTH 8192
@@ -22,7 +21,7 @@ using namespace std;
 #define OK_EMPTY_MSG "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
 #define OK_FORMAT_MSG "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n"
 #define OPTIONS_MSG "HTTP/1.1 200 OK\r\nAllow: GET, POST, PUT, DELETE, OPTIONS, HEAD, TRACE\r\nContent-Length: 0\r\n\r\n"
-#define NO_CONTENT_MSG "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n"
+#define NOT_ACCEPTABLE_MSG "HTTP/1.1 406 Not Acceptable\r\nContent-Type: text/plain\r\nContent-Length: 24\r\n\r\n406 Not Acceptable\r\n"
 
 
 class HttpSocket
@@ -76,15 +75,14 @@ public:
 
 private:
 
-	bool checkVerbValid(const char* method) {
+	bool checkVerbValid(const char* method) const {
 		return strcmp(method, "GET") == 0 || strcmp(method, "POST") == 0 ||
 			strcmp(method, "PUT") == 0 || strcmp(method, "DELETE") == 0 ||
 			strcmp(method, "HEAD") == 0 || strcmp(method, "OPTIONS") == 0 || strcmp(method, "TRACE") == 0;
 	}
 
-	bool checkUrlVaild(const char* url) {
+	bool checkUrlVaild(const char* url) const {
 		return url[0] == '/';
-
 	}
 
 	char* getQueryParamsFromUrl() {
@@ -93,7 +91,7 @@ private:
 	
 	bool htmlRequestChecker();
 
-	std::string getFilePathFromUrl(const char* url);
+	std::string getFilePathFromUrl(const char* url) const;
 
 	void Get();
 	void Post();

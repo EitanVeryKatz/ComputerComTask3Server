@@ -2,7 +2,6 @@
 #include <fstream>
 #include <algorithm>
 
-
 int HttpSocket::ParseHttpRequest() {
 	//parse request line
 
@@ -49,17 +48,13 @@ void HttpSocket::Trace() {
 	snprintf(fullResponse, headerLength + 1, OK_FORMAT_MSG, contentLength, buffer);
 	strcpy(buffer, fullResponse);
 	delete[] fullResponse;
-
 }
 
 void HttpSocket::Options()
 {
-	
 	// Copy the response into the buffer
 	strcpy(buffer, OPTIONS_MSG);
 }
-
-
 
 void HttpSocket::Get() {
 	Head();
@@ -80,9 +75,7 @@ void HttpSocket::BuildHttpResponse(const char* content) {
 	delete[] response;
 }
 
-
-
-std::string HttpSocket::getFilePathFromUrl(const char* url) {
+std::string HttpSocket::getFilePathFromUrl(const char* url) const {
     const char* baseUrl = "/files/";
     if (strncmp(url, baseUrl, strlen(baseUrl)) != 0) {
         return "";
@@ -124,7 +117,6 @@ bool HttpSocket::htmlRequestChecker() {
 
     bool validContentType = false;
 
-
     for (const auto& header : headers) {
 
         if (strstr(header, "Content-Type:") != nullptr) {
@@ -143,7 +135,8 @@ bool HttpSocket::htmlRequestChecker() {
 
 void HttpSocket::Put() {
 
-	htmlRequestChecker();
+	if (!htmlRequestChecker()) //Case: put is not text/html
+		return;
 
     std::string filePath = getFilePathFromUrl(requestUrl);
     if (filePath.empty()) {
@@ -153,20 +146,18 @@ void HttpSocket::Put() {
     }
 
     if (strlen(body) == 0) {
-		throw(NO_CONTENT);
+		throw(NOT_ACCEPTABLE); //Case: empty body is not acceptable
     }
 
     //Attempt to open the file and write to it
     std::ofstream file(filePath);
-    if (!file) { //Case: file wasn't found or no permissions to write
-		file.close();
+    if (!file) //Case: file wasn't found or no permissions to write
 		throw(NOT_FOUND);
-    }
-
+    
     file << body;
     file.close();
 
-    std::cout << "File " << filePath << " successfully updated";
+    std::cout << "File " << filePath << " successfully updated" << std::endl;
 
 	strcpy(buffer, OK_EMPTY_MSG);
 }
@@ -174,16 +165,15 @@ void HttpSocket::Put() {
 void HttpSocket::Delete() {
 
     std::string filePath = getFilePathFromUrl(requestUrl);
-    if (filePath.empty()) {
+    if (filePath.empty()) 
         throw(BAD_REQUEST); //Case: Invalid URL
-    }
 
     //Attempt to delete the file
     if (remove(filePath.c_str())) {
 		throw(NOT_FOUND); //Case: file wasn't found or no permissions to delete
     }
 
-    std::cout << "File " << filePath << " successfully deleted";
+    std::cout << "File " << filePath << " successfully deleted" << std::endl;
 
 	strcpy(buffer, OK_EMPTY_MSG);
 }
@@ -218,11 +208,8 @@ void HttpSocket::Head() {
 	strcpy(htmlFilesPath, "C:\\temp\\");//path to files
 	if (checkValidQuery(query)) {
 		//parse query
-		char* key = strtok(query, "=");
+		strtok(query, "="); //No need for the returned value
 		char* lang = strtok(nullptr, "\0");
-		
-		
-		
 
 		if (strcmp(lang, "he") == 0) {
 			strcat(htmlFilesPath, "he.html");
@@ -241,7 +228,6 @@ void HttpSocket::Head() {
 	}
 	//open file
 	std::ifstream carmion(htmlFilesPath);
-	/*std::ifstream carmion("C:\\temp\\en.html");*/
 	if (!carmion.is_open()) {
 		throw(NOT_FOUND);
 		
@@ -257,6 +243,7 @@ void HttpSocket::Head() {
 	char* response = new char[headerLength + contentLength + 1];
 	snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
 	strcpy(buffer, response);
+	delete[] response; //Added to prevent memory leak
 }
 
 void HttpSocket::freeHeaders() {
