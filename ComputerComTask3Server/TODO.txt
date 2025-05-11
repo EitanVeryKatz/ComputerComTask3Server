@@ -1,5 +1,7 @@
 - link html pictures
 - define all consts
 - document and buetify files
-- add protocol
+- add protocol (Gal)
 
+Fixed memory leaks, beautified abit, and added cosmetic changes (Compiled)
+-Gal
