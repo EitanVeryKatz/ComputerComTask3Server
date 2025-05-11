@@ -17,6 +17,10 @@ using namespace std;
 #define MAX_LINE_LENGTH 1024
 #define MAX_HEADERS 50
 
+#define BAD_REQUEST_MSG "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"
+
+
+
 class HttpSocket
 {
 public:
@@ -31,6 +35,8 @@ public:
 	int len;
 	int statusCode;
 	
+	void freeHeaders();
+
 	bool checkValidQuery(char* query);
 
 	void BuildHttpResponse(const char* content);
@@ -80,6 +86,8 @@ private:
 	char* getQueryParamsFromUrl() {
 		return strstr(requestUrl, "?");
 	}
+	
+	bool htmlRequestChecker();
 
 	std::string getFilePathFromUrl(const char* url);
 

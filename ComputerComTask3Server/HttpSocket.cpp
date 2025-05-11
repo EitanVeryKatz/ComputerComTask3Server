@@ -7,16 +7,30 @@ int HttpSocket::ParseHttpRequest() {
 	//parse request line
 	char* requestLine = strtok(buffer, "\r\n");
 	if (requestLine == nullptr) {
-		return NOT_FULLY_PROCCESED;
+		return BAD_REQUEST;
 	}
-	sscanf(requestLine, "%s %s", verb, requestUrl);
+	if (sscanf(requestLine, "%s %s", verb, requestUrl) != 2) {
+		return BAD_REQUEST; // Return an error if parsing fails
+	}
 	if (!checkVerbValid(verb)) {
 		throw(BAD_REQUEST);
 	}
 	if (!checkUrlVaild(requestUrl)) {
 		throw(BAD_REQUEST);
 	}
-	strcpy(body, strstr(buffer, "\r\n\r\n") + 4); //skip headers
+	//parse headers
+	char* headerLine = new char;
+	strcpy(headerLine,strtok(nullptr, "\r\n"));
+	while (headerLine != nullptr && strlen(headerLine) > 0) {
+		headers.push_back(headerLine);
+		headerLine = strtok(nullptr, "\r\n");
+	}
+
+	char* bodyStart = strstr(buffer, "\r\n\r\n");
+	if (bodyStart == nullptr) {
+		return BAD_REQUEST; // Return an error if the delimiter is not found
+	}
+	strcpy(body, bodyStart + 4); //skip headers
 
 	return NOT_FULLY_PROCCESED;
 }
@@ -121,12 +135,13 @@ void HttpSocket::Post() {
     buffer[sizeof(ok)] = '\0'; //add the null-terminating to make it a string
 }
 
-void HttpSocket::Put() {
+bool HttpSocket::htmlRequestChecker() {
 
     bool validContentType = false;
-    const char badRequest[] = "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n";
+
 
     for (const auto& header : headers) {
+
         if (strstr(header, "Content-Type:") != nullptr) {
             if (strstr(header, "text/html") != nullptr) {
                 validContentType = true;
@@ -135,15 +150,20 @@ void HttpSocket::Put() {
     }
 
     if (!validContentType) {
-        strncpy(buffer, badRequest, sizeof(badRequest));
-        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
-        return;
+        strncpy(buffer, BAD_REQUEST_MSG, sizeof(BAD_REQUEST_MSG));
+        buffer[sizeof(BAD_REQUEST_MSG)] = '\0'; //add the null-terminating to make it a string
     }
+	return validContentType;
+}
+
+void HttpSocket::Put() {
+
+	htmlRequestChecker();
 
     std::string filePath = getFilePathFromUrl(requestUrl);
     if (filePath.empty()) {
-        strncpy(buffer, badRequest, sizeof(badRequest));
-        buffer[sizeof(badRequest)] = '\0'; //add the null-terminating to make it a string
+        strncpy(buffer, BAD_REQUEST_MSG, sizeof(BAD_REQUEST_MSG));
+        buffer[sizeof(BAD_REQUEST_MSG)] = '\0'; //add the null-terminating to make it a string
         return;
     }
 
@@ -241,4 +261,11 @@ void HttpSocket::Head() {
 	char* response = new char[headerLength + contentLength + 1];
 	snprintf(response, headerLength + 1, header, contentLength);
 	strcpy(buffer, response);
+}
+
+void HttpSocket::freeHeaders() {
+	for (char* header : headers) {
+		delete[] header;
+	}
+	headers.clear();
 }

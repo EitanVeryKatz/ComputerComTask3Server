@@ -327,6 +327,8 @@ void sendMessage(int index)
 	sockets[index].processRequest();
 	sendBuff = sockets[index].buffer;
 
+	
+
 	bytesSent = send(msgSocket, sendBuff, (int)strlen(sendBuff), 0);
 	if (SOCKET_ERROR == bytesSent)
 	{
@@ -334,8 +336,8 @@ void sendMessage(int index)
 		return;
 	}
 
-	cout<<"Http Server: Sent: "<<bytesSent<<"\\"<<strlen(sendBuff)<<" bytes of \""<<sendBuff<<"\" message.\n";	
-	sockets[index].headers.clear();
+	cout<<"Http Server: Sent: "<<bytesSent<<"\\"<<strlen(sendBuff)<<" bytes of \""<<sendBuff<<"\" message.\n";
+	sockets[index].freeHeaders();
 	sockets[index].send = IDLE;
 }
 
