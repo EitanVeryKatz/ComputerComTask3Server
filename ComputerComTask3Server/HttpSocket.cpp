@@ -31,7 +31,7 @@ int HttpSocket::ParseHttpRequest() {
 		headers.push_back(headerLine);//pushback
 	}
 
-	char* bodyStart = strstr(buffer, "\n\r\n");
+	char* bodyStart = strstr(buffer, "\r\n\r\n");
 	if (bodyStart == nullptr) {
 		return BAD_REQUEST; // Return an error if the delimiter is not found
 	}
@@ -104,7 +104,7 @@ std::string HttpSocket::getFilePathFromUrl(const char* url) {
     }
 
     std::string filename = url + strlen(baseUrl);
-    std::string filePath = "c:/temp/" + filename;
+    std::string filePath = "C:/temp/" + filename;
 
     //Replace forward slashes with backslashes for Windows compatibility
     std::replace(filePath.begin(), filePath.end(), '/', '\\');
@@ -227,12 +227,14 @@ bool HttpSocket::checkValidQuery(char* query) {
 	if (query == nullptr) {
 		return false;
 	}
-	char* key = strtok(query, "=");
-	char* value = strtok(nullptr, "&");
+	char temp[32];
+	strcpy(temp, query);
+	char* key = strtok(temp, "=");
+	char* value = strtok(nullptr, "\0");
 	if (key == nullptr || value == nullptr) {
 		return false;
 	}
-	if (strcmp(key, "lang") != 0) {
+	if (strcmp(key, "?lang") != 0) {
 		return false;
 	}
 	if (strcmp(value, "he") != 0 && strcmp(value, "en") != 0 && strcmp(value, "fr") != 0) {
@@ -246,39 +248,39 @@ void HttpSocket::Head() {
 
 	//parse query
 	char* query = getQueryParamsFromUrl();
-	char htmlFilePath[64];
+	
+	char htmlFilesPath[32];
 	if (checkValidQuery(query)) {
 		//parse query
 		char* key = strtok(query, "=");
-		char* value = strtok(nullptr, "&");
-		char* lang = value;
+		char* lang = strtok(nullptr, "\0");
+		
+		
+		strcpy(htmlFilesPath, "C:\\temp\\");//path to files
 
 		if (strcmp(lang, "he") == 0) {
-			strcpy(htmlFilePath, "he.html");
+			strcat(htmlFilesPath, "he.html");
 		}
 		else if (strcmp(lang, "en") == 0) {
-			strcpy(htmlFilePath, "en.html");
+			strcat(htmlFilesPath, "en.html");
 		}
 		else if (strcmp(lang, "fr") == 0) {
-			strcpy(htmlFilePath, "fr.html");
+			strcat(htmlFilesPath, "fr.html");
 		}
 		else
 			throw(BAD_REQUEST);
 	}
 	else {
-		strcpy(htmlFilePath, "he.html");
+		strcat(htmlFilesPath, "he.html");
 	}
 	//open file
-	std::ifstream carmion(htmlFilePath);
+	std::ifstream carmion(htmlFilesPath);
 	carmion.read(body, sizeof(body));
 	if (carmion.gcount() == 0) {
 		throw(NOT_FOUND);
 	}
 	// Define the HTTP HEAD response
-	const char* header = "HTTP/1.1 200 OK\r\n"
-		"Content-Type: text/html\r\n"
-		"Content-Length: %zu\r\n"
-		"\r\n";
+	const char* header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n";
 	size_t contentLength = strlen(body);
 	size_t headerLength = snprintf(nullptr, 0, header, contentLength);
 	char* response = new char[headerLength + contentLength + 1];
