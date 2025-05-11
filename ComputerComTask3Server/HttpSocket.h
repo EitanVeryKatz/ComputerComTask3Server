@@ -14,7 +14,7 @@ using namespace std;
 #define NOT_FOUND 404
 #define CREATED 201
 
-#define MAX_LINE_LENGTH 1024
+#define MAX_LINE_LENGTH 8192
 #define MAX_HEADERS 50
 
 #define BAD_REQUEST_MSG "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"
@@ -26,12 +26,12 @@ class HttpSocket
 public:
 	SOCKET id;
 	char verb[16];
-	char requestUrl[512];
+	char requestUrl[16384];
 	vector<char*> headers;
 	char body[MAX_LINE_LENGTH];
 	int	recv;
 	int	send;
-	char buffer[2048];
+	char buffer[8192];
 	int len;
 	int statusCode;
 	

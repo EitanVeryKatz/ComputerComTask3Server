@@ -338,6 +338,7 @@ void sendMessage(int index)
 
 	cout<<"Http Server: Sent: "<<bytesSent<<"\\"<<strlen(sendBuff)<<" bytes of \""<<sendBuff<<"\" message.\n";
 	sockets[index].freeHeaders();
+	sockets[index].len = 0;
 	sockets[index].send = IDLE;
 }
 
