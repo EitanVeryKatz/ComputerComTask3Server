@@ -1,11 +1,10 @@
-char* token;
-for((token = strtok(nullptr, "\r\n");token;token = strtok(nullptr, "\r\n"));//gets header from buffer
-
-   size_t n = strlen(token) + 1;/finds len
-   char* headerLine = new char[n];//allocate mem
-   strcpy(headerLine, token);//copies to alocated mem
-   headers.push_back(headerLine);//pushback
-}
+HTTP/1.1 204 No Content
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE
+Access-Control-Allow-Headers: Content-Type, Authorization
+Access-Control-Max-Age: 86400
+Connection: keep-alive
+Content-Length: 0
 
 done:
 1.update struct to include action and uri
