@@ -1,9 +1,10 @@
-char* token = strtok(nullptr, "\r\n");
-if (token) {
-    size_t n = strlen(token) + 1;
-    char* headerLine = new char[n];
-    strcpy(headerLine, token);
-    headers.push_back(headerLine);
+char* token;
+for((token = strtok(nullptr, "\r\n");token;token = strtok(nullptr, "\r\n"));//gets header from buffer
+
+   size_t n = strlen(token) + 1;/finds len
+   char* headerLine = new char[n];//allocate mem
+   strcpy(headerLine, token);//copies to alocated mem
+   headers.push_back(headerLine);//pushback
 }
 
 done:

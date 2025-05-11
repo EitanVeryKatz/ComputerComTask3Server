@@ -5,7 +5,10 @@
 
 int HttpSocket::ParseHttpRequest() {
 	//parse request line
-	char* requestLine = strtok(buffer, "\r\n");
+
+	char copyBuffer[MAX_LINE_LENGTH];
+	strcpy(copyBuffer, buffer);
+	char* requestLine = strtok(copyBuffer, "\r\n");
 	if (requestLine == nullptr) {
 		return BAD_REQUEST;
 	}
@@ -19,14 +22,16 @@ int HttpSocket::ParseHttpRequest() {
 		throw(BAD_REQUEST);
 	}
 	//parse headers
-	char* headerLine = new char;
-	strcpy(headerLine,strtok(nullptr, "\r\n"));
-	while (headerLine != nullptr && strlen(headerLine) > 0) {
-		headers.push_back(headerLine);
-		headerLine = strtok(nullptr, "\r\n");
+
+	for (char* token = strtok(nullptr, "\r\n"); token; token = strtok(nullptr, "\r\n")){//gets header from buffer
+
+		size_t n = strlen(token) + 1; // finds len
+		char* headerLine = new char[n];//allocate mem
+		strcpy(headerLine, token);//copies to alocated mem
+		headers.push_back(headerLine);//pushback
 	}
 
-	char* bodyStart = strstr(buffer, "\r\n\r\n");
+	char* bodyStart = strstr(buffer, "\n\r\n");
 	if (bodyStart == nullptr) {
 		return BAD_REQUEST; // Return an error if the delimiter is not found
 	}
