@@ -1,37 +1,10 @@
-
-
-GAL:
-POST-
-PUT-
-DELETE-
-
-
-add data stracture to hold post shit and managable by your nethods
-
-EITAN:
-
-V-make carmion.html for every lang
-
-
-V-HEAD- get html headers
-V-GET- get html based on lang
-V-TRACE- echo (askGPT)
-V-OPTIONS- "constexpr for all allow ask GPT"
-
-
-
-BOTH:
-for socket in main:
-	if timeout:
-		disconnect()
-
-
-
-
-
-
-
-
+char* token = strtok(nullptr, "\r\n");
+if (token) {
+    size_t n = strlen(token) + 1;
+    char* headerLine = new char[n];
+    strcpy(headerLine, token);
+    headers.push_back(headerLine);
+}
 
 done:
 1.update struct to include action and uri
