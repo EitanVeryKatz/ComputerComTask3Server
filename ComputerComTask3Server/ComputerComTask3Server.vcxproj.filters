@@ -18,5 +18,24 @@
     <ClCompile Include="TCP server NonBlocking.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HttpDereferancer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpSocket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="TODO.txt" />
+    <Text Include="he.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="HttpSocket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="en.html" />
+    <None Include="fr.html" />
   </ItemGroup>
 </Project>

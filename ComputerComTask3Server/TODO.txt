@@ -1,0 +1,25 @@
+HTTP/1.1 204 No Content
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE
+Access-Control-Allow-Headers: Content-Type, Authorization
+Access-Control-Max-Age: 86400
+Connection: keep-alive
+Content-Length: 0
+
+done:
+1.update struct to include action and uri
+2.add parsing function
+3.in recieve: activate parsing and and status code <--
+6.in send: add switch case for action
+
+body: 
+
+did a little cosmetic changes to recv (didnt interfere w/ your logic).
+added procces request func in send (rerrouts to procces based on verb(switchcase))
+noticed what you told me about the while loop, fixed it.
+
+
+*Didn't run anything yet
+** we need to delegate between us the endpoints and to figure out what will the usage protocol for our server will be.
+
+-Eitan
