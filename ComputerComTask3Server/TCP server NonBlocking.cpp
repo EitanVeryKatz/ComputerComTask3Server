@@ -302,29 +302,15 @@ void sendMessage(int index)
 	char* sendBuff;
 
 	SOCKET msgSocket = sockets[index].id;
-	//if (sockets[index].verb == SEND_TIME)
-	//{
-	//	// Answer client's request by the current time string.
-	//	
-	//	// Get the current time.
-	//	time_t timer;
-	//	time(&timer);
-	//	// Parse the current time to printable string.
-	//	strcpy(sendBuff, ctime(&timer));
-	//	sendBuff[strlen(sendBuff)-1] = 0; //to remove the new-line from the created string
-	//}
-	//else if(sockets[index].verb == SEND_SECONDS)
-	//{
-	//	// Answer client's request by the current time in seconds.
-	//	
-	//	// Get the current time.
-	//	time_t timer;
-	//	time(&timer);
-	//	// Convert the number to string.
-	//	itoa((int)timer, sendBuff, 10);		
-	//}
-
-	sockets[index].processRequest();
+	
+	try {
+		sockets[index].processRequest();
+		
+	}
+	catch (const char* msg) {
+		cout << "Http Server: Error: " << msg << endl;
+		strcpy(sockets[index].buffer, BAD_REQUEST_MSG);
+	}
 	sendBuff = sockets[index].buffer;
 
 	
