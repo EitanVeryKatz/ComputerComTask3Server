@@ -218,6 +218,24 @@ void HttpSocket::Delete() {
     buffer[sizeof(ok)] = '\0'; //add the null-terminating to make it a string
 }
 
+bool HttpSocket::checkValidQuery(char* query) {
+	if (query == nullptr) {
+		return false;
+	}
+	char* key = strtok(query, "=");
+	char* value = strtok(nullptr, "&");
+	if (key == nullptr || value == nullptr) {
+		return false;
+	}
+	if (strcmp(key, "lang") != 0) {
+		return false;
+	}
+	if (strcmp(value, "he") != 0 && strcmp(value, "en") != 0 && strcmp(value, "fr") != 0) {
+		return false;
+	}
+	return true;
+
+}
 
 void HttpSocket::Head() {
 
