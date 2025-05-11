@@ -16,7 +16,7 @@ using namespace std;
 
 #define MAX_LINE_LENGTH 8192
 #define MAX_HEADERS 50
-
+#define NOT_FOUND_MSG "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
 #define BAD_REQUEST_MSG "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"
 
 
@@ -66,7 +66,7 @@ public:
 			Trace();
 		}
 		else {
-			throw("HTTP method not supported");
+			throw(BAD_REQUEST);
 		}
 	}
 

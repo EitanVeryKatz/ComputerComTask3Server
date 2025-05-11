@@ -307,9 +307,16 @@ void sendMessage(int index)
 		sockets[index].processRequest();
 		
 	}
-	catch (const char* msg) {
-		cout << "Http Server: Error: " << msg << endl;
-		strcpy(sockets[index].buffer, BAD_REQUEST_MSG);
+	catch (const int statusCode) {
+		
+		if (statusCode==NOT_FOUND) {
+			cout << "Http Server: Error: " << NOT_FOUND_MSG << endl;
+			strcpy(sockets[index].buffer, NOT_FOUND_MSG);
+		}
+		else {
+			cout << "Http Server: Error: " << BAD_REQUEST_MSG << endl;
+			strcpy(sockets[index].buffer, BAD_REQUEST_MSG);
+		}
 	}
 	sendBuff = sockets[index].buffer;
 
