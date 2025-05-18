@@ -231,12 +231,24 @@ void HttpSocket::Head() {
         }
     }
 
-    // Construct the file path based on the language
-    char htmlFilePath[64] = {};
-    snprintf(htmlFilePath, sizeof(htmlFilePath), "C:\\temp\\%s\\index.html", lang);
+    // Extract path component from URL
+    std::string path = this->url;
+    size_t queryPos = path.find('?');
+    if (queryPos != std::string::npos) {
+        path = path.substr(0, queryPos);  // Remove query parameters
+    }
+
+    // Get the file path from the URL
+    std::string filePath = getFilePathFromUrl(path.c_str());
+    if (filePath.empty()) {
+        throw(NOT_FOUND);
+    }
+
+    // Append the language folder and index.html
+    filePath += "\\" + std::string(lang) + "\\index.html";
 
     // Open the file
-    std::ifstream file(htmlFilePath);
+    std::ifstream file(filePath);
     if (!file.is_open()) {
         throw(NOT_FOUND);
     }
@@ -254,7 +266,6 @@ void HttpSocket::Head() {
     strcpy(buffer, response);
     delete[] response;
 }
-
 
 void HttpSocket::freeHeaders() {
 	for (char* header : headers) {
