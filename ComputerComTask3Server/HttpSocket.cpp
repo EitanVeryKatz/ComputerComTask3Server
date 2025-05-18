@@ -284,8 +284,9 @@ void HttpSocket::Head() {
             throw(NOT_FOUND);
         }
         
-		streamsize pngSize = pngFile.tellg();
-		pngFile.read(body, MAX_LINE_LENGTH);
+		
+		pngFile.read(body, MAX_BODY_SIZE);
+        streamsize pngSize = pngFile.tellg();
 		if (pngFile.gcount() == 0) {
             pngFile.close();
 			throw(NOT_FOUND);
