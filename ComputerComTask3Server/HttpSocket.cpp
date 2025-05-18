@@ -248,7 +248,7 @@ void HttpSocket::Head() {
     size_t lastSlash = filePath.find_last_of("\\");
     std::string fileName = (lastSlash != std::string::npos) ? filePath.substr(lastSlash + 1) : filePath;
     std::string dirPath = filePath.substr(0, lastSlash);
-    std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName;
+    std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName + ".html";
 
     // Open the file
     std::ifstream file(fullPath);
