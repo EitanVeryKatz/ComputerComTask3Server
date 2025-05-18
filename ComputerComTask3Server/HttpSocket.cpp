@@ -276,6 +276,7 @@ void HttpSocket::Head() {
         contentLength = strlen(body);
         headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
         response = new char[headerLength + contentLength + 1];
+        snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
     }
     else {
 		ifstream pngFile("C:\\temp\\" + filePath, ios::binary);
@@ -293,11 +294,11 @@ void HttpSocket::Head() {
 
 		// Construct the HTTP HEAD response
 		contentLength = pngFile.gcount();
-		headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
+		headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG_IMG, contentLength);
 		response = new char[headerLength + contentLength + 1];
-
+        snprintf(response, headerLength + 1, OK_FORMAT_MSG_IMG, contentLength);
     }
-    snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
+    
     strcpy(buffer, response);
     delete[] response;
 }
