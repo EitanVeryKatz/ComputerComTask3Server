@@ -32,9 +32,6 @@ using namespace std;
 #define DATA_TYPE_HTML true
 #define DATA_TYPE_PNG false
 
-
-
-
 class HttpSocket
 {
 public:
@@ -48,7 +45,7 @@ public:
 	char buffer[MAX_BODY_SIZE];
 	int len;
 	int statusCode;
-	size_t lastContentLength = 0; // Add this line
+	size_t lastContentLength = 0;
 	
 	void freeHeaders();
 
