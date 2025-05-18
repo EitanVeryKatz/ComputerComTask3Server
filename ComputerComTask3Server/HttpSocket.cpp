@@ -57,22 +57,39 @@ void HttpSocket::Options()
 }
 
 void HttpSocket::Get() {
+
 	Head();
-	BuildHttpResponse(body);
+
+    bool isPNGRequest = (strstr(buffer, "png") != nullptr);
+    BuildHttpResponse(body, lastContentLength, isPNGRequest);
 }
 
 //build http get response
-void HttpSocket::BuildHttpResponse(const char* content) {
-	
-	size_t contentLength = strlen(content);
-	size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
-	char* response = new char[headerLength + contentLength + 1];
+void HttpSocket::BuildHttpResponse(const char* content, size_t contentLength, bool isBinary) {
 
-	snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
-	strcat(response, content);
-	
-	strcpy(buffer,response);
-	delete[] response;
+    size_t headerLength;
+
+    if (isBinary) {
+        headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG_IMG, contentLength);
+    }
+    else {
+        headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
+    }
+
+    // Write header to buffer
+    if (isBinary) {
+        snprintf(buffer, headerLength + 1, OK_FORMAT_MSG_IMG, contentLength);
+        // Copy binary content after header
+        memcpy(buffer + headerLength, content, contentLength);
+        // Do NOT null-terminate for binary data
+    }
+    else {
+        snprintf(buffer, headerLength + 1, OK_FORMAT_MSG, contentLength);
+        memcpy(buffer + headerLength, content, contentLength);
+        buffer[headerLength + contentLength] = '\0'; // Null-terminate for text
+    }
+
+    lastContentLength = headerLength + contentLength;
 }
 
 std::string HttpSocket::getFilePathFromUrl(const char* url) const {
@@ -207,6 +224,8 @@ bool HttpSocket::checkValidQuery(char* query) {
 
 void HttpSocket::Head() {
 
+	std::fill(body, body + sizeof(body), '\0'); //Clearing the body buffer
+
     // Parse query
     char* query = getQueryParamsFromUrl();
     const char* supportedLangs[] = { "he", "en", "fr" };
@@ -244,7 +263,9 @@ void HttpSocket::Head() {
     std::string filePath = getFilePathFromUrl(path.c_str());
 
     if (path.find(".png") != std::string::npos) {
-		filePath = path.substr(path.find_last_of("/") + 1); // filePath now Holds Path to png
+        string dirPath = "C:\\temp\\";
+        string pngFileName = path.substr(path.find_last_of("/") + 1); // filePath now Holds Path to png
+        filePath = dirPath + pngFileName;
 		dataType = DATA_TYPE_PNG;
     }
 	else if (filePath.empty()) {
@@ -254,6 +275,7 @@ void HttpSocket::Head() {
     char* response;
     size_t contentLength;
     size_t headerLength;
+
     if (dataType == DATA_TYPE_HTML) {
         // Construct the path by inserting the language folder
         size_t lastSlash = filePath.find_last_of("\\");
@@ -261,13 +283,21 @@ void HttpSocket::Head() {
         std::string dirPath = filePath.substr(0, lastSlash);
         std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName + ".html";
 
+        FILE* filePtr = fopen(fullPath.c_str(), "r");
+        if (filePtr)
+        {
+            lastContentLength = fileSize(filePtr);
+            fclose(filePtr);
+        }
+
         // Open the file
         std::ifstream file(fullPath);
         if (!file.is_open()) {
             throw(NOT_FOUND);
         }
 
-        file.read(body, sizeof(body));
+        file.read(body, lastContentLength);
+        body[lastContentLength] = '\0';
         if (file.gcount() == 0) {
             throw(NOT_FOUND);
         }
@@ -275,31 +305,38 @@ void HttpSocket::Head() {
         // Construct the HTTP HEAD response
         contentLength = strlen(body);
         headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
-        response = new char[headerLength + contentLength + 1];
+        response = new char[headerLength + 1];
         snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
-    }
-    else {
-		ifstream pngFile("C:\\temp\\" + filePath, ios::binary);
-        if (!pngFile) {
-            throw(NOT_FOUND);
-        }
-        
-		
-		pngFile.read(body, MAX_BODY_SIZE);
-        streamsize pngSize = pngFile.tellg();
-		if (pngFile.gcount() == 0) {
-            pngFile.close();
-			throw(NOT_FOUND);
-		}
-		pngFile.close();
 
-		// Construct the HTTP HEAD response
-		contentLength = pngFile.gcount();
-		headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG_IMG, contentLength);
-		response = new char[headerLength + contentLength + 1];
+    }
+    else { //Case: reading a png file
+        FILE* pngFile = fopen(filePath.c_str(), "rb");
+
+        if (!pngFile)
+            throw(NOT_FOUND);
+
+        long PNGfileSize = fileSize(pngFile);
+
+        if (PNGfileSize <= 0 || PNGfileSize > (long)sizeof(body))
+        {
+            fclose(pngFile);
+			throw(NOT_FOUND);
+        }
+
+        size_t bytesRead = fread(body, 1, PNGfileSize, pngFile);
+        fclose(pngFile);
+
+        if (bytesRead != (size_t)PNGfileSize)
+            throw(NOT_FOUND);
+
+        lastContentLength = bytesRead;
+
+        // Construct the HTTP HEAD response
+        contentLength = lastContentLength;
+        headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG_IMG, contentLength);
+        response = new char[headerLength + 1];
         snprintf(response, headerLength + 1, OK_FORMAT_MSG_IMG, contentLength);
     }
-    
     strcpy(buffer, response);
     delete[] response;
 }
@@ -310,4 +347,17 @@ void HttpSocket::freeHeaders() {
 		delete[] header;
 	}
 	headers.clear();
+}
+
+long int HttpSocket::fileSize(FILE* f) {
+
+    long int res;
+    long int saver = ftell(f);
+
+    fseek(f, 0, SEEK_END);
+    res = ftell(f);
+
+    fseek(f, saver, SEEK_SET);
+
+    return res;
 }

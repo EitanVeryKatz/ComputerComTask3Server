@@ -45,15 +45,16 @@ public:
 	char body[MAX_BODY_SIZE];
 	int	recv;
 	int	send;
-	char buffer[8192];
+	char buffer[MAX_BODY_SIZE];
 	int len;
 	int statusCode;
+	size_t lastContentLength = 0; // Add this line
 	
 	void freeHeaders();
 
 	bool checkValidQuery(char* query);
 
-	void BuildHttpResponse(const char* content);
+	void BuildHttpResponse(const char* content, size_t contentLength, bool isBinary);
 
 	int ParseHttpRequest();
 
@@ -75,6 +76,8 @@ public:
 		}
 		else if (strcmp(verb, "HEAD") == 0) {
 			Head();
+			size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, lastContentLength);
+			lastContentLength = headerLength;
 		}
 		else if (strcmp(verb, "TRACE") == 0) {
 			Trace();
@@ -111,4 +114,6 @@ private:
 	void Options();
 	void Head();
 	void Trace();
+
+	long int fileSize(FILE* f);
 };

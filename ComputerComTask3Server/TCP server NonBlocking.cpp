@@ -310,32 +310,36 @@ void sendMessage(int index)
 		if (statusCode==NOT_FOUND) {
 			cout << "Http Server: Error: " << NOT_FOUND_MSG << endl;
 			strcpy(sockets[index].buffer, NOT_FOUND_MSG);
+			sockets[index].lastContentLength = strlen(NOT_FOUND_MSG);
 		}
 		else if (statusCode == NOT_ACCEPTABLE) {
 			cout << "Http Server: Error: " << NOT_ACCEPTABLE_MSG << endl;
 			strcpy(sockets[index].buffer, NOT_ACCEPTABLE_MSG);
+			sockets[index].lastContentLength = strlen(NOT_ACCEPTABLE_MSG);
 		}
 		else if (statusCode == IM_A_TEAPOT) {
 			cout << "Http Server: Error: " << IM_A_TEAPOT_MSG << endl;
 			strcpy(sockets[index].buffer, IM_A_TEAPOT_MSG);
+			sockets[index].lastContentLength = strlen(IM_A_TEAPOT_MSG);
 		}
 		else {
 			cout << "Http Server: Error: " << BAD_REQUEST_MSG << endl;
 			strcpy(sockets[index].buffer, BAD_REQUEST_MSG);
+			sockets[index].lastContentLength = strlen(BAD_REQUEST_MSG);
 		}
 	}
 	sendBuff = sockets[index].buffer;
 
-	bytesSent = send(msgSocket, sendBuff, (int)strlen(sendBuff), 0);
+	bytesSent = send(msgSocket, sendBuff, (int)sockets[index].lastContentLength, 0);
 	if (SOCKET_ERROR == bytesSent)
 	{
 		cout << "Http Server: Error at send(): " << WSAGetLastError() << endl;	
 		return;
 	}
 
-	cout<<"Http Server: Sent: "<<bytesSent<<"\\"<<strlen(sendBuff)<<" bytes of \""<<sendBuff<<"\" message.\n";
+	cout<<"Http Server: Sent: "<<bytesSent<<"\\"<< sockets[index].lastContentLength <<" bytes of \""<<sendBuff<<"\" message.\n";
+	sockets[index].lastContentLength = 0;
 	sockets[index].freeHeaders();
 	sockets[index].len = 0;
 	sockets[index].send = IDLE;
 }
-
