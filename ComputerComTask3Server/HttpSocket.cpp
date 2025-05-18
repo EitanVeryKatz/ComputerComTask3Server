@@ -207,50 +207,54 @@ bool HttpSocket::checkValidQuery(char* query) {
 
 void HttpSocket::Head() {
 
-	//parse query
-	char* query = getQueryParamsFromUrl();
-	
-	char htmlFilesPath[32] = {};
-	strcpy(htmlFilesPath, "C:\\temp\\");//path to files
-	if (checkValidQuery(query)) {
-		//parse query
-		strtok(query, "="); //No need for the returned value
-		char* lang = strtok(nullptr, "\0");
+    // Parse query
+    char* query = getQueryParamsFromUrl();
+    const char* supportedLangs[] = { "he", "en", "fr" };
+    const int numLangs = 3;
+    char lang[8] = "he";  // Default language
 
-		if (strcmp(lang, "he") == 0) {
-			strcat(htmlFilesPath, "he.html");
-		}
-		else if (strcmp(lang, "en") == 0) {
-			strcat(htmlFilesPath, "en.html");
-		}
-		else if (strcmp(lang, "fr") == 0) {
-			strcat(htmlFilesPath, "fr.html");
-		}
-		else
-			throw(BAD_REQUEST);
-	}
-	else {
-		strcat(htmlFilesPath, "he.html");
-	}
-	//open file
-	std::ifstream carmion(htmlFilesPath);
-	if (!carmion.is_open()) {
-		throw(NOT_FOUND);
-		
-	}
-	carmion.read(body, sizeof(body));
-	if (carmion.gcount() == 0) {
-		throw(NOT_FOUND);
-	}
-	// Define the HTTP HEAD response
-	
-	size_t contentLength = strlen(body);
-	size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
-	char* response = new char[headerLength + contentLength + 1];
-	snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
-	strcpy(buffer, response);
-	delete[] response; //Added to prevent memory leak
+    if (checkValidQuery(query)) {
+        strtok(query, "="); // No need for the returned value
+        char* paramValue = strtok(nullptr, "\0");
+
+        // Validate the language parameter
+        bool isValidLang = false;
+        for (int i = 0; i < numLangs; i++) {
+            if (strcmp(paramValue, supportedLangs[i]) == 0) {
+                strcpy(lang, paramValue);
+                isValidLang = true;
+                break;
+            }
+        }
+        if (!isValidLang) {
+            throw(BAD_REQUEST);
+        }
+    }
+
+    // Construct the file path based on the language
+    char htmlFilePath[64] = {};
+    snprintf(htmlFilePath, sizeof(htmlFilePath), "C:\\temp\\%s\\index.html", lang);
+
+    // Open the file
+    std::ifstream file(htmlFilePath);
+    if (!file.is_open()) {
+        throw(NOT_FOUND);
+    }
+
+    file.read(body, sizeof(body));
+    if (file.gcount() == 0) {
+        throw(NOT_FOUND);
+    }
+
+    // Construct the HTTP HEAD response
+    size_t contentLength = strlen(body);
+    size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
+    char* response = new char[headerLength + contentLength + 1];
+    snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
+    strcpy(buffer, response);
+    delete[] response;
 }
+
 
 void HttpSocket::freeHeaders() {
 	for (char* header : headers) {
