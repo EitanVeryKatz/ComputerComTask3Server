@@ -26,6 +26,13 @@ using namespace std;
 #define NOT_ACCEPTABLE_MSG "HTTP/1.1 406 Not Acceptable\r\nContent-Type: text/plain\r\nContent-Length: 20\r\n\r\n406 Not Acceptable\r\n"
 #define IM_A_TEAPOT_MSG "HTTP/1.1 418 I'm a teapot\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\nI'm a teapot.\r\n"
 
+
+#define DATA_TYPE_HTML true
+#define DATA_TYPE_PNG false
+
+
+
+
 class HttpSocket
 {
 public:

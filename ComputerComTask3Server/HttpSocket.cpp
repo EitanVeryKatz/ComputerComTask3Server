@@ -212,6 +212,8 @@ void HttpSocket::Head() {
     const char* supportedLangs[] = { "he", "en", "fr" };
     const int numLangs = 3;
     char lang[8] = "he";  // Default language
+    bool dataType = DATA_TYPE_HTML;
+    
 
     if (checkValidQuery(query)) {
         strtok(query, "="); // No need for the returned value
@@ -240,31 +242,61 @@ void HttpSocket::Head() {
 
     // Get the file path using the existing function
     std::string filePath = getFilePathFromUrl(path.c_str());
-    if (filePath.empty()) {
-        throw(NOT_FOUND);
+
+    if (path.find(".png") != std::string::npos) {
+		filePath = path.substr(path.find_last_of("/") + 1); // filePath now Holds Path to png
+		dataType = DATA_TYPE_PNG;
     }
-
-    // Construct the path by inserting the language folder
-    size_t lastSlash = filePath.find_last_of("\\");
-    std::string fileName = (lastSlash != std::string::npos) ? filePath.substr(lastSlash + 1) : filePath;
-    std::string dirPath = filePath.substr(0, lastSlash);
-    std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName + ".html";
-
-    // Open the file
-    std::ifstream file(fullPath);
-    if (!file.is_open()) {
+	else if (filePath.empty()) {
         throw(NOT_FOUND);
-    }
+	}
 
-    file.read(body, sizeof(body));
-    if (file.gcount() == 0) {
-        throw(NOT_FOUND);
-    }
+    char* response;
+    size_t contentLength;
+    size_t headerLength;
+    if (dataType == DATA_TYPE_HTML) {
+        // Construct the path by inserting the language folder
+        size_t lastSlash = filePath.find_last_of("\\");
+        std::string fileName = (lastSlash != std::string::npos) ? filePath.substr(lastSlash + 1) : filePath;
+        std::string dirPath = filePath.substr(0, lastSlash);
+        std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName + ".html";
 
-    // Construct the HTTP HEAD response
-    size_t contentLength = strlen(body);
-    size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
-    char* response = new char[headerLength + contentLength + 1];
+        // Open the file
+        std::ifstream file(fullPath);
+        if (!file.is_open()) {
+            throw(NOT_FOUND);
+        }
+
+        file.read(body, sizeof(body));
+        if (file.gcount() == 0) {
+            throw(NOT_FOUND);
+        }
+
+        // Construct the HTTP HEAD response
+        contentLength = strlen(body);
+        headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
+        response = new char[headerLength + contentLength + 1];
+    }
+    else {
+		ifstream pngFile("C:\\temp\\" + filePath, ios::binary);
+        if (!pngFile) {
+            throw(NOT_FOUND);
+        }
+        
+		streamsize pngSize = pngFile.tellg();
+		pngFile.read(body, MAX_LINE_LENGTH);
+		if (pngFile.gcount() == 0) {
+            pngFile.close();
+			throw(NOT_FOUND);
+		}
+		pngFile.close();
+
+		// Construct the HTTP HEAD response
+		contentLength = pngFile.gcount();
+		headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength);
+		response = new char[headerLength + contentLength + 1];
+
+    }
     snprintf(response, headerLength + 1, OK_FORMAT_MSG, contentLength);
     strcpy(buffer, response);
     delete[] response;
