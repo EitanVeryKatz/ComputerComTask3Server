@@ -162,28 +162,62 @@ bool HttpSocket::htmlRequestChecker() {
 void HttpSocket::Put() {
 
 	if (!htmlRequestChecker()) //Case: put is not text/html
-		return;
-
-    std::string filePath = getFilePathFromUrl(requestUrl);
-    if (filePath.empty()) {
-        strncpy(buffer, BAD_REQUEST_MSG, sizeof(BAD_REQUEST_MSG));
-        buffer[sizeof(BAD_REQUEST_MSG)] = '\0'; //add the null-terminating to make it a string
-        return;
-    }
+        throw(NOT_ACCEPTABLE); //Case: if not text/html, not acceptable
 
     if (strlen(body) == 0) {
-		throw(NOT_ACCEPTABLE); //Case: empty body is not acceptable
+        throw(NOT_ACCEPTABLE); //Case: empty body is not acceptable
     }
 
+    std::string filePath = getFilePathFromUrl(requestUrl);
+    if (filePath.empty())
+        throw(BAD_REQUEST); //Case: Invalid URL
+
+    // Parse query
+    char* query = getQueryParamsFromUrl();
+    const char* supportedLangs[] = { "he", "en", "fr" };
+    const int numLangs = 3;
+    char lang[8] = "he";  // Default language
+
+    if (checkValidQuery(query)) {
+        strtok(query, "="); // No need for the returned value
+        char* paramValue = strtok(nullptr, "\0");
+
+        // Validate the language parameter
+        bool isValidLang = false;
+        for (int i = 0; i < numLangs; i++) {
+            if (strcmp(paramValue, supportedLangs[i]) == 0) {
+                strcpy(lang, paramValue);
+                isValidLang = true;
+                break;
+            }
+        }
+        if (!isValidLang) {
+            throw(BAD_REQUEST);
+        }
+    }
+
+    // Extract path component from URL (before '?')
+    std::string path = filePath;
+    size_t queryPos = path.find('?');
+    if (queryPos != std::string::npos) {
+        path = path.substr(0, queryPos);  // Remove query parameters
+    }
+
+    // Construct the path by inserting the language folder
+    size_t lastSlash = path.find_last_of("\\");
+    std::string fileName = (lastSlash != std::string::npos) ? path.substr(lastSlash + 1) : path;
+    std::string dirPath = path.substr(0, lastSlash);
+    std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName;
+
     //Attempt to open the file and write to it
-    std::ofstream file(filePath);
+    std::ofstream file(fullPath);
     if (!file) //Case: file wasn't found or no permissions to write
 		throw(NOT_FOUND);
     
     file << body;
     file.close();
 
-    std::cout << "File " << filePath << " successfully updated" << std::endl;
+    std::cout << "File " << fullPath << " successfully updated" << std::endl;
 
 	strcpy(buffer, OK_EMPTY_MSG);
     lastContentLength = strlen(OK_EMPTY_MSG);
@@ -192,15 +226,52 @@ void HttpSocket::Put() {
 void HttpSocket::Delete() {
 
     std::string filePath = getFilePathFromUrl(requestUrl);
-    if (filePath.empty()) 
+    if (filePath.empty())
         throw(BAD_REQUEST); //Case: Invalid URL
 
+    // Parse query
+    char* query = getQueryParamsFromUrl();
+    const char* supportedLangs[] = { "he", "en", "fr" };
+    const int numLangs = 3;
+    char lang[8] = "he";  // Default language
+
+    if (checkValidQuery(query)) {
+        strtok(query, "="); // No need for the returned value
+        char* paramValue = strtok(nullptr, "\0");
+
+        // Validate the language parameter
+        bool isValidLang = false;
+        for (int i = 0; i < numLangs; i++) {
+            if (strcmp(paramValue, supportedLangs[i]) == 0) {
+                strcpy(lang, paramValue);
+                isValidLang = true;
+                break;
+            }
+        }
+        if (!isValidLang) {
+            throw(BAD_REQUEST);
+        }
+    }
+
+    // Extract path component from URL (before '?')
+    std::string path = filePath;
+    size_t queryPos = path.find('?');
+    if (queryPos != std::string::npos) {
+        path = path.substr(0, queryPos);  // Remove query parameters
+    }
+
+    // Construct the path by inserting the language folder
+    size_t lastSlash = path.find_last_of("\\");
+    std::string fileName = (lastSlash != std::string::npos) ? path.substr(lastSlash + 1) : path;
+    std::string dirPath = path.substr(0, lastSlash);
+    std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName;
+
     //Attempt to delete the file
-    if (remove(filePath.c_str())) {
+    if (remove(fullPath.c_str())) {
 		throw(NOT_FOUND); //Case: file wasn't found or no permissions to delete
     }
 
-    std::cout << "File " << filePath << " successfully deleted" << std::endl;
+    std::cout << "File " << fullPath << " successfully deleted" << std::endl;
 
 	strcpy(buffer, OK_EMPTY_MSG);
     lastContentLength = strlen(OK_EMPTY_MSG);
