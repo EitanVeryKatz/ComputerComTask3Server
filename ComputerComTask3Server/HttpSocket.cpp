@@ -47,6 +47,7 @@ void HttpSocket::Trace() {
 
 	snprintf(fullResponse, headerLength + 1, OK_FORMAT_MSG, contentLength, buffer);
 	strcpy(buffer, fullResponse);
+    lastContentLength = headerLength + 1;
 	delete[] fullResponse;
 }
 
@@ -54,6 +55,7 @@ void HttpSocket::Options()
 {
 	// Copy the response into the buffer
 	strcpy(buffer, OPTIONS_MSG);
+    lastContentLength = strlen(OPTIONS_MSG);
 }
 
 void HttpSocket::Get() {
@@ -134,6 +136,7 @@ void HttpSocket::Post() {
 		throw(IM_A_TEAPOT);
 
     strcpy(buffer, OK_EMPTY_MSG);
+    lastContentLength = strlen(OK_EMPTY_MSG);
 }
 
 bool HttpSocket::htmlRequestChecker() {
@@ -183,6 +186,7 @@ void HttpSocket::Put() {
     std::cout << "File " << filePath << " successfully updated" << std::endl;
 
 	strcpy(buffer, OK_EMPTY_MSG);
+    lastContentLength = strlen(OK_EMPTY_MSG);
 }
 
 void HttpSocket::Delete() {
@@ -199,6 +203,7 @@ void HttpSocket::Delete() {
     std::cout << "File " << filePath << " successfully deleted" << std::endl;
 
 	strcpy(buffer, OK_EMPTY_MSG);
+    lastContentLength = strlen(OK_EMPTY_MSG);
 }
 
 bool HttpSocket::checkValidQuery(char* query) {
