@@ -231,24 +231,27 @@ void HttpSocket::Head() {
         }
     }
 
-    // Extract path component from URL
-    std::string path = this->url;
+    // Extract path component from URL (before '?')
+    std::string path = requestUrl;
     size_t queryPos = path.find('?');
     if (queryPos != std::string::npos) {
         path = path.substr(0, queryPos);  // Remove query parameters
     }
 
-    // Get the file path from the URL
+    // Get the file path using the existing function
     std::string filePath = getFilePathFromUrl(path.c_str());
     if (filePath.empty()) {
         throw(NOT_FOUND);
     }
 
-    // Append the language folder and index.html
-    filePath += "\\" + std::string(lang) + "\\index.html";
+    // Construct the path by inserting the language folder
+    size_t lastSlash = filePath.find_last_of("\\");
+    std::string fileName = (lastSlash != std::string::npos) ? filePath.substr(lastSlash + 1) : filePath;
+    std::string dirPath = filePath.substr(0, lastSlash);
+    std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName;
 
     // Open the file
-    std::ifstream file(filePath);
+    std::ifstream file(fullPath);
     if (!file.is_open()) {
         throw(NOT_FOUND);
     }
@@ -266,6 +269,7 @@ void HttpSocket::Head() {
     strcpy(buffer, response);
     delete[] response;
 }
+
 
 void HttpSocket::freeHeaders() {
 	for (char* header : headers) {
