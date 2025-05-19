@@ -39,8 +39,46 @@ int HttpSocket::ParseHttpRequest() {
 	return NOT_FULLY_PROCCESED;
 }
 
+bool HttpSocket::checkVerbValid(const char* method) const {
+    return strcmp(method, "GET") == 0 || strcmp(method, "POST") == 0 ||
+        strcmp(method, "PUT") == 0 || strcmp(method, "DELETE") == 0 ||
+        strcmp(method, "HEAD") == 0 || strcmp(method, "OPTIONS") == 0 || strcmp(method, "TRACE") == 0;
+}
+
+void HttpSocket::processRequest(){
+    if (strcmp(verb, "GET") == 0) {
+        Get();
+    }
+    else if (strcmp(verb, "POST") == 0) {
+        Post();
+    }
+    else if (strcmp(verb, "DELETE") == 0) {
+        Delete();
+    }
+    else if (strcmp(verb, "PUT") == 0) {
+        Put();
+    }
+    else if (strcmp(verb, "OPTIONS") == 0) {
+        Options();
+    }
+    else if (strcmp(verb, "HEAD") == 0) {
+        Head();
+        size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, lastContentLength);
+        lastContentLength = headerLength;
+    }
+    else if (strcmp(verb, "TRACE") == 0) {
+        Trace();
+    }
+    else {
+        throw(BAD_REQUEST);
+    }
+}
+
 void HttpSocket::Trace() {
 	// Define the HTTP TRACE response
+    if (strcmp(requestUrl, "/")) {
+        throw NOT_ACCEPTABLE;
+    }
 	size_t contentLength = strlen(buffer);
     strcpy(body, buffer);
 
@@ -93,22 +131,25 @@ void HttpSocket::BuildHttpResponse(const char* content, size_t contentLength, bo
     lastContentLength = headerLength + contentLength;
 }
 
-std::string HttpSocket::getFilePathFromUrl(const char* url) const {
+string HttpSocket::getFilePathFromUrl(const char* url) const {
     const char* baseUrl = "/files/";
     if (strncmp(url, baseUrl, strlen(baseUrl)) != 0) {
         return "";
     }
 
-    std::string filename = url + strlen(baseUrl);
-    std::string filePath = "C:/temp/" + filename;
+    string filename = url + strlen(baseUrl);
+    string filePath = "C:/temp/" + filename;
 
     //Replace forward slashes with backslashes for Windows compatibility
-    std::replace(filePath.begin(), filePath.end(), '/', '\\');
+    replace(filePath.begin(), filePath.end(), '/', '\\');
 
     return filePath;
 }
 
 void HttpSocket::Post() {
+    if (strcmp(requestUrl, "/")) {
+        throw NOT_ACCEPTABLE;
+    }
 
 	if (body[0] == '\0') //Case: no body was sent
 		throw(NOT_ACCEPTABLE);
@@ -128,7 +169,7 @@ void HttpSocket::Post() {
 		throw(BAD_REQUEST);
 
 	//Print the body to the console
-	std::cout << "POST Body Content:" << std::endl << body << std::endl;
+	cout << "POST Body Content:" << endl << body << endl;
 
 	//First, print the post message, then check for easter egg
 	if (strcmp(body, TEAPOT) == 0) //Easter egg
@@ -167,7 +208,7 @@ void HttpSocket::Put() {
         throw(NOT_ACCEPTABLE); //Case: empty body is not acceptable
     }
 
-    std::string filePath = getFilePathFromUrl(requestUrl);
+    string filePath = getFilePathFromUrl(requestUrl);
     if (filePath.empty())
         throw(BAD_REQUEST); //Case: Invalid URL
 
@@ -196,27 +237,27 @@ void HttpSocket::Put() {
     }
 
     // Extract path component from URL (before '?')
-    std::string path = filePath;
+    string path = filePath;
     size_t queryPos = path.find('?');
-    if (queryPos != std::string::npos) {
+    if (queryPos != string::npos) {
         path = path.substr(0, queryPos);  // Remove query parameters
     }
 
     // Construct the path by inserting the language folder
     size_t lastSlash = path.find_last_of("\\");
-    std::string fileName = (lastSlash != std::string::npos) ? path.substr(lastSlash + 1) : path;
-    std::string dirPath = path.substr(0, lastSlash);
-    std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName;
+    string fileName = (lastSlash != string::npos) ? path.substr(lastSlash + 1) : path;
+    string dirPath = path.substr(0, lastSlash);
+    string fullPath = dirPath + "\\" + string(lang) + "\\" + fileName;
 
     //Attempt to open the file and write to it
-    std::ofstream file(fullPath);
+    ofstream file(fullPath);
     if (!file) //Case: file wasn't found or no permissions to write
 		throw(NOT_FOUND);
     
     file << body;
     file.close();
 
-    std::cout << "File " << fullPath << " successfully updated" << std::endl;
+    cout << "File " << fullPath << " successfully updated" << endl;
 
 	strcpy(buffer, OK_EMPTY_MSG);
     lastContentLength = strlen(OK_EMPTY_MSG);
@@ -224,7 +265,7 @@ void HttpSocket::Put() {
 
 void HttpSocket::Delete() {
 
-    std::string filePath = getFilePathFromUrl(requestUrl);
+    string filePath = getFilePathFromUrl(requestUrl);
     if (filePath.empty())
         throw(BAD_REQUEST); //Case: Invalid URL
 
@@ -253,24 +294,24 @@ void HttpSocket::Delete() {
     }
 
     // Extract path component from URL (before '?')
-    std::string path = filePath;
+    string path = filePath;
     size_t queryPos = path.find('?');
-    if (queryPos != std::string::npos) {
+    if (queryPos != string::npos) {
         path = path.substr(0, queryPos);  // Remove query parameters
     }
 
     // Construct the path by inserting the language folder
     size_t lastSlash = path.find_last_of("\\");
-    std::string fileName = (lastSlash != std::string::npos) ? path.substr(lastSlash + 1) : path;
-    std::string dirPath = path.substr(0, lastSlash);
-    std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName;
+    string fileName = (lastSlash != string::npos) ? path.substr(lastSlash + 1) : path;
+    string dirPath = path.substr(0, lastSlash);
+    string fullPath = dirPath + "\\" + string(lang) + "\\" + fileName;
 
     //Attempt to delete the file
     if (remove(fullPath.c_str())) {
 		throw(NOT_FOUND); //Case: file wasn't found or no permissions to delete
     }
 
-    std::cout << "File " << fullPath << " successfully deleted" << std::endl;
+    cout << "File " << fullPath << " successfully deleted" << endl;
 
 	strcpy(buffer, OK_EMPTY_MSG);
     lastContentLength = strlen(OK_EMPTY_MSG);
@@ -299,7 +340,7 @@ bool HttpSocket::checkValidQuery(char* query) {
 
 void HttpSocket::Head() {
 
-	std::fill(body, body + sizeof(body), '\0'); //Clearing the body buffer
+	fill(body, body + sizeof(body), '\0'); //Clearing the body buffer
 
     // Parse query
     char* query = getQueryParamsFromUrl();
@@ -328,16 +369,16 @@ void HttpSocket::Head() {
     }
 
     // Extract path component from URL (before '?')
-    std::string path = requestUrl;
+    string path = requestUrl;
     size_t queryPos = path.find('?');
-    if (queryPos != std::string::npos) {
+    if (queryPos != string::npos) {
         path = path.substr(0, queryPos);  // Remove query parameters
     }
 
     // Get the file path using the existing function
-    std::string filePath = getFilePathFromUrl(path.c_str());
+    string filePath = getFilePathFromUrl(path.c_str());
 
-    if (path.find(".png") != std::string::npos) {
+    if (path.find(".png") != string::npos) {
         string dirPath = "C:\\temp\\";
         string pngFileName = path.substr(path.find_last_of("/") + 1); // filePath now Holds Path to png
         filePath = dirPath + pngFileName;
@@ -354,9 +395,9 @@ void HttpSocket::Head() {
     if (dataType == DATA_TYPE_HTML) {
         // Construct the path by inserting the language folder
         size_t lastSlash = filePath.find_last_of("\\");
-        std::string fileName = (lastSlash != std::string::npos) ? filePath.substr(lastSlash + 1) : filePath;
-        std::string dirPath = filePath.substr(0, lastSlash);
-        std::string fullPath = dirPath + "\\" + std::string(lang) + "\\" + fileName + ".html";
+        string fileName = (lastSlash != string::npos) ? filePath.substr(lastSlash + 1) : filePath;
+        string dirPath = filePath.substr(0, lastSlash);
+        string fullPath = dirPath + "\\" + string(lang) + "\\" + fileName + ".html";
 
         FILE* filePtr = fopen(fullPath.c_str(), "r");
         if (filePtr)
@@ -366,7 +407,7 @@ void HttpSocket::Head() {
         }
 
         // Open the file
-        std::ifstream file(fullPath);
+        ifstream file(fullPath);
         if (!file.is_open()) {
             throw(NOT_FOUND);
         }
@@ -436,3 +477,4 @@ long int HttpSocket::fileSize(FILE* f) {
 
     return res;
 }
+

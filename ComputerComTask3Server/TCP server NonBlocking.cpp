@@ -116,7 +116,7 @@ void main()
 	}
 	addSocket(listenSocket, LISTEN);
 
-	std::cout << "Http server listening on port " << HTTP_PORT << "..." << std::endl;
+	cout << "Http server listening on port " << HTTP_PORT << "..." << endl;
 
     // Accept connections and handles them one by one.
 	while (true)

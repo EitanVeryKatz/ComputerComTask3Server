@@ -56,42 +56,13 @@ public:
 
 	int ParseHttpRequest();
 
-	void processRequest() {
-		if (strcmp(verb, "GET") == 0) {
-			Get();
-		}
-		else if (strcmp(verb, "POST") == 0) {
-			Post();
-		}
-		else if (strcmp(verb, "DELETE") == 0) {
-			Delete();
-		}
-		else if (strcmp(verb, "PUT") == 0) {
-			Put();
-		}
-		else if (strcmp(verb, "OPTIONS") == 0) {
-			Options();
-		}
-		else if (strcmp(verb, "HEAD") == 0) {
-			Head();
-			size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, lastContentLength);
-			lastContentLength = headerLength;
-		}
-		else if (strcmp(verb, "TRACE") == 0) {
-			Trace();
-		}
-		else {
-			throw(BAD_REQUEST);
-		}
-	}
+	void processRequest();
 
 private:
 
-	bool checkVerbValid(const char* method) const {
-		return strcmp(method, "GET") == 0 || strcmp(method, "POST") == 0 ||
-			strcmp(method, "PUT") == 0 || strcmp(method, "DELETE") == 0 ||
-			strcmp(method, "HEAD") == 0 || strcmp(method, "OPTIONS") == 0 || strcmp(method, "TRACE") == 0;
-	}
+	
+
+	bool checkVerbValid(const char* method) const;
 
 	bool checkUrlVaild(const char* url) const {
 		return url[0] == '/';
@@ -103,7 +74,7 @@ private:
 	
 	bool htmlRequestChecker();
 
-	std::string getFilePathFromUrl(const char* url) const;
+	string getFilePathFromUrl(const char* url) const;
 
 	void Get();
 	void Post();
