@@ -1,8 +1,7 @@
-- link html pictures
-- define all consts
-- document and buetify files
-- add protocol (Gal)
-- Make sure there are no double prints or large prints in the server's cmd
+updated TODO:
 
-Fixed memory leaks, beautified abit, and added cosmetic changes (Compiled)
--Gal
+1. make post method decline a url with more than "http://localhost:8080/" in the url
+2. beautify
+3. check if PUT also needs to create (and return 204 created if needed)
+4. make trace method decline a url with more than "http://localhost:8080/" in the url
+- Gal
