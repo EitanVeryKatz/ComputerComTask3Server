@@ -1,8 +1,7 @@
 updated TODO:
 
-1. make post method decline a url with more than "http://localhost:8080/" in the url
-2. beautify
+
 3. check if PUT also needs to create (and return 204 created if needed)
-4. make trace method decline a url with more than "http://localhost:8080/" in the url
+
 5. add wireshark pics
 - Gal
