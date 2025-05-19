@@ -42,13 +42,12 @@ int HttpSocket::ParseHttpRequest() {
 void HttpSocket::Trace() {
 	// Define the HTTP TRACE response
 	size_t contentLength = strlen(buffer);
-	size_t headerLength = snprintf(nullptr, 0, OK_FORMAT_MSG, contentLength, buffer);
-	char* fullResponse = new char[headerLength + 1];
+    strcpy(body, buffer);
 
-	snprintf(fullResponse, headerLength + 1, OK_FORMAT_MSG, contentLength, buffer);
-	strcpy(buffer, fullResponse);
-    lastContentLength = headerLength + 1;
-	delete[] fullResponse;
+	size_t headerLength = snprintf(buffer, MAX_LINE_LENGTH, OK_FORMAT_TRACE, contentLength);
+    strcat(buffer, body);
+
+    lastContentLength = headerLength + contentLength;
 }
 
 void HttpSocket::Options()

@@ -23,6 +23,7 @@ using namespace std;
 #define BAD_REQUEST_MSG "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"
 #define OK_EMPTY_MSG "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
 #define OK_FORMAT_MSG "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n"
+#define OK_FORMAT_TRACE "HTTP/1.1 200 OK\r\nContent-Type: message/http\r\nContent-Length: %zu\r\n\r\n"
 #define OK_FORMAT_MSG_IMG "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: %zu\r\n\r\n"
 #define OPTIONS_MSG "HTTP/1.1 200 OK\r\nAllow: GET, POST, PUT, DELETE, OPTIONS, HEAD, TRACE\r\nContent-Length: 0\r\n\r\n"
 #define NOT_ACCEPTABLE_MSG "HTTP/1.1 406 Not Acceptable\r\nContent-Type: text/plain\r\nContent-Length: 20\r\n\r\n406 Not Acceptable\r\n"
