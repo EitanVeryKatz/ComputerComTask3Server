@@ -2,6 +2,11 @@
 #include <fstream>
 #include <algorithm>
 
+// Parses the HTTP request stored in the buffer.
+// Extracts the request line, headers, and body.
+// Returns an int status code indicating the result of parsing.
+// Returns BAD_REQUEST if parsing fails, NOT_FULLY_PROCCESED if successful but incomplete.
+
 int HttpSocket::ParseHttpRequest() {
 	//parse request line
 
@@ -39,12 +44,16 @@ int HttpSocket::ParseHttpRequest() {
 	return NOT_FULLY_PROCCESED;
 }
 
+// Validates the HTTP method (verb) in the request.
+// Returns true if the method is valid, false otherwise.
 bool HttpSocket::checkVerbValid(const char* method) const {
     return strcmp(method, "GET") == 0 || strcmp(method, "POST") == 0 ||
         strcmp(method, "PUT") == 0 || strcmp(method, "DELETE") == 0 ||
         strcmp(method, "HEAD") == 0 || strcmp(method, "OPTIONS") == 0 || strcmp(method, "TRACE") == 0;
 }
 
+// Processes the HTTP request based on the parsed verb.
+// Calls the appropriate handler function for the request type.
 void HttpSocket::processRequest(){
     if (strcmp(verb, "GET") == 0) {
         Get();
@@ -74,6 +83,9 @@ void HttpSocket::processRequest(){
     }
 }
 
+// Handles the HTTP TRACE request.
+// Echoes back the received request in the response body.
+// Throws NOT_ACCEPTABLE if the request URL is invalid.
 void HttpSocket::Trace() {
 	// Define the HTTP TRACE response
     if (strcmp(requestUrl, "/")) {
@@ -88,6 +100,8 @@ void HttpSocket::Trace() {
     lastContentLength = headerLength + contentLength;
 }
 
+// Handles the HTTP OPTIONS request.
+// Responds with a predefined message listing supported methods.
 void HttpSocket::Options()
 {
 	// Copy the response into the buffer
@@ -95,6 +109,8 @@ void HttpSocket::Options()
     lastContentLength = strlen(OPTIONS_MSG);
 }
 
+// Handles the HTTP GET request.
+// Calls the Head function and builds the HTTP response.
 void HttpSocket::Get() {
 
 	Head();
@@ -103,7 +119,11 @@ void HttpSocket::Get() {
     BuildHttpResponse(body, lastContentLength, isPNGRequest);
 }
 
-//build http get response
+// Builds the HTTP response for GET requests.
+// Constructs the response header and appends the content.
+// content - The content to include in the response.
+// contentLength - The length of the content.
+// isBinary - True if the content is binary (e.g., PNG), false otherwise.
 void HttpSocket::BuildHttpResponse(const char* content, size_t contentLength, bool isBinary) {
 
     size_t headerLength;
@@ -131,6 +151,9 @@ void HttpSocket::BuildHttpResponse(const char* content, size_t contentLength, bo
     lastContentLength = headerLength + contentLength;
 }
 
+// Extracts the file path from the request URL.
+// url - The request URL.
+// Returns the file path corresponding to the URL.
 string HttpSocket::getFilePathFromUrl(const char* url) const {
     const char* baseUrl = "/files/";
     if (strncmp(url, baseUrl, strlen(baseUrl)) != 0) {
@@ -146,6 +169,10 @@ string HttpSocket::getFilePathFromUrl(const char* url) const {
     return filePath;
 }
 
+// Handles the HTTP POST request.
+// Validates headers and body, and processes the request.
+// Throws NOT_ACCEPTABLE if url is invalid or if the body is empty.
+// Throws BAD_REQUEST if the Content-Type header is invalid.
 void HttpSocket::Post() {
     if (strcmp(requestUrl, "/")) {
         throw NOT_ACCEPTABLE;
@@ -179,6 +206,8 @@ void HttpSocket::Post() {
     lastContentLength = strlen(OK_EMPTY_MSG);
 }
 
+// Checks if the Content-Type header is valid for HTML requests.
+// Returns true if the Content-Type is valid, false otherwise.
 bool HttpSocket::htmlRequestChecker() {
 
     bool validContentType = false;
@@ -199,6 +228,11 @@ bool HttpSocket::htmlRequestChecker() {
 	return validContentType;
 }
 
+// Handles the HTTP PUT request.
+// Validates headers and body, and processes the request.
+// Throws NOT_ACCEPTABLE if the Content-Type header is invalid or if the body is empty.
+// Throws BAD_REQUEST if the URL is invalid.
+// Throws NOT_FOUND if the file cannot be opened or written to.
 void HttpSocket::Put() {
 
 	if (!htmlRequestChecker()) //Case: put is not text/html
@@ -263,6 +297,10 @@ void HttpSocket::Put() {
     lastContentLength = strlen(OK_EMPTY_MSG);
 }
 
+// Handles the HTTP DELETE request.
+// Validates the request URL and deletes the specified file.
+// Throws BAD_REQUEST if the URL is invalid.
+// Throws NOT_FOUND if the file cannot be found or deleted.
 void HttpSocket::Delete() {
 
     string filePath = getFilePathFromUrl(requestUrl);
@@ -317,6 +355,8 @@ void HttpSocket::Delete() {
     lastContentLength = strlen(OK_EMPTY_MSG);
 }
 
+// Extracts the query parameters from the request URL.
+// checks for validity of the query parameters.
 bool HttpSocket::checkValidQuery(char* query) {
 	if (query == nullptr) {
 		return false;
@@ -338,6 +378,11 @@ bool HttpSocket::checkValidQuery(char* query) {
 
 }
 
+// Extracts the query parameters from the request URL.
+//tries to open the file according to the query parameters.
+//fills the body with the file content if successful.
+//throws NOT_FOUND if the file cannot be opened.
+//throws BAD_REQUEST if the URL is invalid.
 void HttpSocket::Head() {
 
 	fill(body, body + sizeof(body), '\0'); //Clearing the body buffer
@@ -457,7 +502,8 @@ void HttpSocket::Head() {
     delete[] response;
 }
 
-
+// Frees the memory allocated for headers.
+// Clears the headers vector.
 void HttpSocket::freeHeaders() {
 	for (char* header : headers) {
 		delete[] header;
@@ -465,6 +511,9 @@ void HttpSocket::freeHeaders() {
 	headers.clear();
 }
 
+// Calculates the size of a file.
+// f - Pointer to the file.
+// Returns the size of the file in bytes.
 long int HttpSocket::fileSize(FILE* f) {
 
     long int res;
