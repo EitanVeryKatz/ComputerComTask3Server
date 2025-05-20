@@ -1,7 +1,3 @@
 updated TODO:
-
-
-3. check if PUT also needs to create (and return 204 created if needed)
-
-5. add wireshark pics
-- Gal
+Gal: add wireshark pics
+Eitan: remove unnecessary couts to the console (so it would be cleaner, only prints that are comming from the queries handles itself such as POST prints, PUT prints or DELETE prints to the screen should be acceptable)
