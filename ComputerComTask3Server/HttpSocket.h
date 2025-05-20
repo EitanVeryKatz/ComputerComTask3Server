@@ -1,15 +1,16 @@
 ﻿#pragma once
-#define _CRT_SECURE_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include <iostream>
 using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
 #include <vector>
+#include <string>
+
 
 #define BAD_REQUEST 400
 #define NOT_FULLY_PROCCESED 0
 #define OK 200
+#define CREATED 201
 #define NOT_FOUND 404
 #define NOT_ACCEPTABLE 406
 #define IM_A_TEAPOT 418
@@ -19,13 +20,15 @@ using namespace std;
 #define MAX_BODY_SIZE 1400000
 #define MAX_LINE_LENGTH 8192
 #define MAX_HEADERS 50
-#define NOT_FOUND_MSG "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
-#define BAD_REQUEST_MSG "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"
+
 #define OK_EMPTY_MSG "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
 #define OK_FORMAT_MSG "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n"
 #define OK_FORMAT_TRACE "HTTP/1.1 200 OK\r\nContent-Type: message/http\r\nContent-Length: %zu\r\n\r\n"
 #define OK_FORMAT_MSG_IMG "HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: %zu\r\n\r\n"
 #define OPTIONS_MSG "HTTP/1.1 200 OK\r\nAllow: GET, POST, PUT, DELETE, OPTIONS, HEAD, TRACE\r\nContent-Length: 0\r\n\r\n"
+#define CREATED_EMPTY_MSG "HTTP/1.1 201 Created\r\nContent-Length: 0\r\n\r\n"
+#define BAD_REQUEST_MSG "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n"
+#define NOT_FOUND_MSG "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n"
 #define NOT_ACCEPTABLE_MSG "HTTP/1.1 406 Not Acceptable\r\nContent-Type: text/plain\r\nContent-Length: 20\r\n\r\n406 Not Acceptable\r\n"
 #define IM_A_TEAPOT_MSG "HTTP/1.1 418 I'm a teapot\r\nContent-Type: text/plain\r\nContent-Length: 15\r\n\r\nI'm a teapot.\r\n"
 
@@ -60,7 +63,7 @@ public:
 
 private:
 
-	
+	string createFullPath();
 
 	bool checkVerbValid(const char* method) const;
 

@@ -1,10 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
-using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
 #include "HttpSocket.h"
+using namespace std;
 
 const int HTTP_PORT = 8080;
 const int MAX_SOCKETS = 60;

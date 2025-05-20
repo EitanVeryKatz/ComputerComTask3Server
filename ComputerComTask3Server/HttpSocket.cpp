@@ -1,6 +1,8 @@
-#include "HttpSocket.h"
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
 #include <fstream>
 #include <algorithm>
+#include "HttpSocket.h"
 
 // Parses the HTTP request stored in the buffer.
 // Extracts the request line, headers, and body.
@@ -235,66 +237,41 @@ bool HttpSocket::htmlRequestChecker() {
 // Throws NOT_FOUND if the file cannot be opened or written to.
 void HttpSocket::Put() {
 
-	if (!htmlRequestChecker()) //Case: put is not text/html
-        throw(NOT_ACCEPTABLE); //Case: if not text/html, not acceptable
+	if (!htmlRequestChecker()) //Case: not a text/html request
+        throw(NOT_ACCEPTABLE);
 
-    if (strlen(body) == 0) {
-        throw(NOT_ACCEPTABLE); //Case: empty body is not acceptable
+    if (strlen(body) == 0) { //Case: empty body
+        throw(NOT_ACCEPTABLE);
     }
 
-    string filePath = getFilePathFromUrl(requestUrl);
-    if (filePath.empty())
-        throw(BAD_REQUEST); //Case: Invalid URL
+    string fullPath = createFullPath();
 
-    // Parse query
-    char* query = getQueryParamsFromUrl();
-    const char* supportedLangs[] = { "he", "en", "fr" };
-    const int numLangs = 3;
-    char lang[8] = "he";  // Default language
-
-    if (checkValidQuery(query)) {
-        strtok(query, "="); // No need for the returned value
-        char* paramValue = strtok(nullptr, "\0");
-
-        // Validate the language parameter
-        bool isValidLang = false;
-        for (int i = 0; i < numLangs; i++) {
-            if (strcmp(paramValue, supportedLangs[i]) == 0) {
-                strcpy(lang, paramValue);
-                isValidLang = true;
-                break;
-            }
-        }
-        if (!isValidLang) {
-            throw(BAD_REQUEST);
-        }
-    }
-
-    // Extract path component from URL (before '?')
-    string path = filePath;
-    size_t queryPos = path.find('?');
-    if (queryPos != string::npos) {
-        path = path.substr(0, queryPos);  // Remove query parameters
-    }
-
-    // Construct the path by inserting the language folder
-    size_t lastSlash = path.find_last_of("\\");
-    string fileName = (lastSlash != string::npos) ? path.substr(lastSlash + 1) : path;
-    string dirPath = path.substr(0, lastSlash);
-    string fullPath = dirPath + "\\" + string(lang) + "\\" + fileName;
+	
+    // Check if the file already exists
+    ifstream fileOpen(fullPath);
+    bool fileExists = fileOpen.good();
+    fileOpen.close();
 
     //Attempt to open the file and write to it
     ofstream file(fullPath);
-    if (!file) //Case: file wasn't found or no permissions to write
-		throw(NOT_FOUND);
-    
+    if (!file) //Case: no permissions
+        throw(NOT_FOUND);
+
     file << body;
     file.close();
 
-    cout << "File " << fullPath << " successfully updated" << endl;
+    cout << "File " << fullPath << " successfully " << (fileExists ? "updated" : "created") << endl;
 
-	strcpy(buffer, OK_EMPTY_MSG);
-    lastContentLength = strlen(OK_EMPTY_MSG);
+    if (fileExists)
+    {
+        strcpy(buffer, OK_EMPTY_MSG);
+        lastContentLength = strlen(OK_EMPTY_MSG);
+    }
+	else //Case: file was created
+    {
+        strcpy(buffer, CREATED_EMPTY_MSG);
+        lastContentLength = strlen(CREATED_EMPTY_MSG);
+    }
 }
 
 // Handles the HTTP DELETE request.
@@ -303,46 +280,7 @@ void HttpSocket::Put() {
 // Throws NOT_FOUND if the file cannot be found or deleted.
 void HttpSocket::Delete() {
 
-    string filePath = getFilePathFromUrl(requestUrl);
-    if (filePath.empty())
-        throw(BAD_REQUEST); //Case: Invalid URL
-
-    // Parse query
-    char* query = getQueryParamsFromUrl();
-    const char* supportedLangs[] = { "he", "en", "fr" };
-    const int numLangs = 3;
-    char lang[8] = "he";  // Default language
-
-    if (checkValidQuery(query)) {
-        strtok(query, "="); // No need for the returned value
-        char* paramValue = strtok(nullptr, "\0");
-
-        // Validate the language parameter
-        bool isValidLang = false;
-        for (int i = 0; i < numLangs; i++) {
-            if (strcmp(paramValue, supportedLangs[i]) == 0) {
-                strcpy(lang, paramValue);
-                isValidLang = true;
-                break;
-            }
-        }
-        if (!isValidLang) {
-            throw(BAD_REQUEST);
-        }
-    }
-
-    // Extract path component from URL (before '?')
-    string path = filePath;
-    size_t queryPos = path.find('?');
-    if (queryPos != string::npos) {
-        path = path.substr(0, queryPos);  // Remove query parameters
-    }
-
-    // Construct the path by inserting the language folder
-    size_t lastSlash = path.find_last_of("\\");
-    string fileName = (lastSlash != string::npos) ? path.substr(lastSlash + 1) : path;
-    string dirPath = path.substr(0, lastSlash);
-    string fullPath = dirPath + "\\" + string(lang) + "\\" + fileName;
+    string fullPath = createFullPath();
 
     //Attempt to delete the file
     if (remove(fullPath.c_str())) {
@@ -527,3 +465,48 @@ long int HttpSocket::fileSize(FILE* f) {
     return res;
 }
 
+string HttpSocket::createFullPath() {
+
+    string filePath = getFilePathFromUrl(requestUrl);
+    if (filePath.empty())
+        throw(BAD_REQUEST); //Case: Invalid URL
+
+    // Parse query
+    char* query = getQueryParamsFromUrl();
+    const char* supportedLangs[] = { "he", "en", "fr" };
+    const int numLangs = 3;
+    char lang[3] = "he";  // Default language
+
+    if (checkValidQuery(query)) {
+        strtok(query, "="); // No need for the returned value
+        char* paramValue = strtok(nullptr, "\0");
+
+        // Validate the language parameter
+        bool isValidLang = false;
+        for (int i = 0; i < numLangs; i++) {
+            if (strcmp(paramValue, supportedLangs[i]) == 0) {
+                strcpy(lang, paramValue);
+                isValidLang = true;
+                break;
+            }
+        }
+        if (!isValidLang) {
+            throw(BAD_REQUEST);
+        }
+    }
+
+    // Extract path component from URL (before '?')
+    string path = filePath;
+    size_t queryPos = path.find('?');
+    if (queryPos != string::npos) {
+        path = path.substr(0, queryPos);  // Remove query parameters
+    }
+
+    // Construct the path by inserting the language folder
+    size_t lastSlash = path.find_last_of("\\");
+    string fileName = (lastSlash != string::npos) ? path.substr(lastSlash + 1) : path;
+    string dirPath = path.substr(0, lastSlash);
+    string fullPath = dirPath + "\\" + string(lang) + "\\" + fileName;
+
+	return fullPath;
+}
