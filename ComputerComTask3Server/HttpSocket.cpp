@@ -106,6 +106,11 @@ void HttpSocket::Trace() {
 // Responds with a predefined message listing supported methods.
 void HttpSocket::Options()
 {
+    // Define the HTTP OPTIONS response
+    if (strcmp(requestUrl, "/")) {
+        throw NOT_ACCEPTABLE;
+    }
+
 	// Copy the response into the buffer
 	strcpy(buffer, OPTIONS_MSG);
     lastContentLength = strlen(OPTIONS_MSG);
