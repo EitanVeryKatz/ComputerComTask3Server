@@ -515,3 +515,9 @@ string HttpSocket::createFullPath() {
 
 	return fullPath;
 }
+
+bool HttpSocket::isMessageStuck() {
+	// Check if the last request was made more than 2 minutes ago
+	time_t currentTime = time(nullptr);
+	return (difftime(currentTime, lastRequestTime) > TWO_MINUTES);
+}

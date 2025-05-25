@@ -159,6 +159,11 @@ void main()
 
 		for (int i = 0; i < MAX_SOCKETS && nfd > 0; i++)
 		{
+			if (sockets[i].isMessageStuck()) {
+				closesocket(sockets[i].id);
+				removeSocket(i);
+			}
+				
 			if (FD_ISSET(sockets[i].id, &waitRecv))
 			{
 				nfd--;
@@ -289,7 +294,7 @@ void receiveMessage(int index)
 			(sockets[index].buffer)[msg.size()] = '\0'; //add the null-terminating to make it a string
 			sockets[index].len = msg.size();
 		}
-
+		sockets[index].lastRequestTime = time(NULL);
 		sockets[index].send = SEND;
 	}
 }

@@ -20,7 +20,7 @@ using namespace std;
 #define MAX_BODY_SIZE 1400000
 #define MAX_LINE_LENGTH 8192
 #define MAX_HEADERS 50
-
+#define TWO_MINUTES 180
 #define OK_EMPTY_MSG "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
 #define OK_FORMAT_MSG "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n"
 #define OK_FORMAT_TRACE "HTTP/1.1 200 OK\r\nContent-Type: message/http\r\nContent-Length: %zu\r\n\r\n"
@@ -40,6 +40,7 @@ class HttpSocket
 {
 public:
 	SOCKET id;
+	time_t lastRequestTime;
 	char verb[16];
 	char requestUrl[16384];
 	vector<char*> headers;
@@ -51,6 +52,8 @@ public:
 	int statusCode;
 	size_t lastContentLength = 0;
 	
+	bool isMessageStuck();
+
 	void freeHeaders();
 
 	bool checkValidQuery(char* query);
