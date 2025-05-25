@@ -159,11 +159,7 @@ void main()
 
 		for (int i = 0; i < MAX_SOCKETS && nfd > 0; i++)
 		{
-			if (sockets[i].isMessageStuck()) {
-				closesocket(sockets[i].id);
-				removeSocket(i);
-			}
-				
+			
 			if (FD_ISSET(sockets[i].id, &waitRecv))
 			{
 				nfd--;
@@ -178,6 +174,11 @@ void main()
 					break;
 				}
 			}
+			if (sockets[i].gotMessage == true && sockets[i].isMessageStuck()) {
+				closesocket(sockets[i].id);
+				removeSocket(i);
+			}
+
 		}
 
 		for (int i = 0; i < MAX_SOCKETS && nfd > 0; i++)
@@ -222,6 +223,7 @@ void removeSocket(int index)
 {
 	sockets[index].recv = EMPTY;
 	sockets[index].send = EMPTY;
+	sockets[index].gotMessage = false;
 	socketsCount--;
 }
 
@@ -295,6 +297,7 @@ void receiveMessage(int index)
 			sockets[index].len = msg.size();
 		}
 		sockets[index].lastRequestTime = time(NULL);
+		sockets[index].gotMessage = true;
 		sockets[index].send = SEND;
 	}
 }

@@ -51,6 +51,7 @@ public:
 	int len;
 	int statusCode;
 	size_t lastContentLength = 0;
+	bool gotMessage = false;
 	
 	bool isMessageStuck();
 
