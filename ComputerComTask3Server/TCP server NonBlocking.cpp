@@ -281,7 +281,6 @@ void receiveMessage(int index)
 	else
 	{
 		sockets[index].buffer[len + bytesRecv] = '\0'; //add the null-terminating to make it a string
-		cout<<"Http Server: Recieved: "<<bytesRecv<<" bytes of \""<<&sockets[index].buffer[len]<<"\" message.\n";
 		
 		sockets[index].len += bytesRecv;
 
@@ -345,7 +344,6 @@ void sendMessage(int index)
 		return;
 	}
 
-	cout<<"Http Server: Sent: "<<bytesSent<<"\\"<< sockets[index].lastContentLength <<" bytes of \""<<sendBuff<<"\" message.\n";
 	sockets[index].lastContentLength = 0;
 	sockets[index].freeHeaders();
 	sockets[index].len = 0;

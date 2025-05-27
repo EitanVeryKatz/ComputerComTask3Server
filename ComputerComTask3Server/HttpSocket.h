@@ -20,7 +20,7 @@ using namespace std;
 #define MAX_BODY_SIZE 1400000
 #define MAX_LINE_LENGTH 8192
 #define MAX_HEADERS 50
-#define TWO_MINUTES 180
+#define TWO_MINUTES 120
 #define OK_EMPTY_MSG "HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n"
 #define OK_FORMAT_MSG "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: %zu\r\n\r\n"
 #define OK_FORMAT_TRACE "HTTP/1.1 200 OK\r\nContent-Type: message/http\r\nContent-Length: %zu\r\n\r\n"
