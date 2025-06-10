@@ -1,14 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
-#include <sstream>
-using namespace std;
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
-#include <string.h>
-#include <time.h>
 #include "HttpSocket.h"
-
+using namespace std;
 
 const int HTTP_PORT = 8080;
 const int MAX_SOCKETS = 60;
@@ -120,6 +116,8 @@ void main()
 	}
 	addSocket(listenSocket, LISTEN);
 
+	cout << "Http server listening on port " << HTTP_PORT << "..." << endl;
+
     // Accept connections and handles them one by one.
 	while (true)
 	{
@@ -161,6 +159,7 @@ void main()
 
 		for (int i = 0; i < MAX_SOCKETS && nfd > 0; i++)
 		{
+			
 			if (FD_ISSET(sockets[i].id, &waitRecv))
 			{
 				nfd--;
@@ -175,6 +174,11 @@ void main()
 					break;
 				}
 			}
+			if (sockets[i].gotMessage == true && sockets[i].isMessageStuck()) {
+				closesocket(sockets[i].id);
+				removeSocket(i);
+			}
+
 		}
 
 		for (int i = 0; i < MAX_SOCKETS && nfd > 0; i++)
@@ -219,6 +223,7 @@ void removeSocket(int index)
 {
 	sockets[index].recv = EMPTY;
 	sockets[index].send = EMPTY;
+	sockets[index].gotMessage = false;
 	socketsCount--;
 }
 
@@ -276,7 +281,6 @@ void receiveMessage(int index)
 	else
 	{
 		sockets[index].buffer[len + bytesRecv] = '\0'; //add the null-terminating to make it a string
-		cout<<"Http Server: Recieved: "<<bytesRecv<<" bytes of \""<<&sockets[index].buffer[len]<<"\" message.\n";
 		
 		sockets[index].len += bytesRecv;
 
@@ -286,12 +290,13 @@ void receiveMessage(int index)
 		if (sockets[index].statusCode == BAD_REQUEST) //Case: The HTTP Request was bad
 		{
 			cout << "Http Server: Bad HTTP request received." << endl;
-			string msg = "HTTP/1.1 " + to_string(BAD_REQUEST) + " Bad Request\r\nContent-Length: 0\r\n\r\n";
+			string msg = BAD_REQUEST_MSG;
 			strncpy(sockets[index].buffer, msg.c_str(), msg.size());
 			(sockets[index].buffer)[msg.size()] = '\0'; //add the null-terminating to make it a string
 			sockets[index].len = msg.size();
 		}
-
+		sockets[index].lastRequestTime = time(NULL);
+		sockets[index].gotMessage = true;
 		sockets[index].send = SEND;
 	}
 }
@@ -302,43 +307,45 @@ void sendMessage(int index)
 	char* sendBuff;
 
 	SOCKET msgSocket = sockets[index].id;
-	//if (sockets[index].verb == SEND_TIME)
-	//{
-	//	// Answer client's request by the current time string.
-	//	
-	//	// Get the current time.
-	//	time_t timer;
-	//	time(&timer);
-	//	// Parse the current time to printable string.
-	//	strcpy(sendBuff, ctime(&timer));
-	//	sendBuff[strlen(sendBuff)-1] = 0; //to remove the new-line from the created string
-	//}
-	//else if(sockets[index].verb == SEND_SECONDS)
-	//{
-	//	// Answer client's request by the current time in seconds.
-	//	
-	//	// Get the current time.
-	//	time_t timer;
-	//	time(&timer);
-	//	// Convert the number to string.
-	//	itoa((int)timer, sendBuff, 10);		
-	//}
-
-	sockets[index].processRequest();
+	
+	try {
+		sockets[index].processRequest();
+		
+	}
+	catch (const int statusCode) {
+		
+		if (statusCode==NOT_FOUND) {
+			cout << "Http Server: Error: " << NOT_FOUND_MSG << endl;
+			strcpy(sockets[index].buffer, NOT_FOUND_MSG);
+			sockets[index].lastContentLength = strlen(NOT_FOUND_MSG);
+		}
+		else if (statusCode == NOT_ACCEPTABLE) {
+			cout << "Http Server: Error: " << NOT_ACCEPTABLE_MSG << endl;
+			strcpy(sockets[index].buffer, NOT_ACCEPTABLE_MSG);
+			sockets[index].lastContentLength = strlen(NOT_ACCEPTABLE_MSG);
+		}
+		else if (statusCode == IM_A_TEAPOT) {
+			cout << "Http Server: Error: " << IM_A_TEAPOT_MSG << endl;
+			strcpy(sockets[index].buffer, IM_A_TEAPOT_MSG);
+			sockets[index].lastContentLength = strlen(IM_A_TEAPOT_MSG);
+		}
+		else {
+			cout << "Http Server: Error: " << BAD_REQUEST_MSG << endl;
+			strcpy(sockets[index].buffer, BAD_REQUEST_MSG);
+			sockets[index].lastContentLength = strlen(BAD_REQUEST_MSG);
+		}
+	}
 	sendBuff = sockets[index].buffer;
 
-	
-
-	bytesSent = send(msgSocket, sendBuff, (int)strlen(sendBuff), 0);
+	bytesSent = send(msgSocket, sendBuff, (int)sockets[index].lastContentLength, 0);
 	if (SOCKET_ERROR == bytesSent)
 	{
 		cout << "Http Server: Error at send(): " << WSAGetLastError() << endl;	
 		return;
 	}
 
-	cout<<"Http Server: Sent: "<<bytesSent<<"\\"<<strlen(sendBuff)<<" bytes of \""<<sendBuff<<"\" message.\n";
+	sockets[index].lastContentLength = 0;
 	sockets[index].freeHeaders();
 	sockets[index].len = 0;
 	sockets[index].send = IDLE;
 }
-
